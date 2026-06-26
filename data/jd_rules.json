@@ -5,48 +5,19 @@
     "ideal_max": 9,
     "absolute_min": 4
   },
-  "core_skills": [
-    "Python",
-    "Embeddings",
-    "Retrieval",
-    "Ranking",
-    "Vector Database",
-    "Pinecone",
-    "Weaviate",
-    "Qdrant",
-    "Milvus",
-    "OpenSearch",
-    "Elasticsearch",
-    "FAISS",
-    "sentence-transformers",
-    "NDCG",
-    "MRR",
-    "MAP",
-    "LLM"
-  ],
-  "bonus_skills": [
-    "Fine-tuning",
-    "LoRA",
-    "QLoRA",
-    "PEFT",
-    "Learning-to-rank",
-    "XGBoost",
-    "HR-tech",
-    "Distributed systems"
-  ],
+  "semantic_clusters": {
+    "Core_Programming": ["python", "golang", "c++", "java"],
+    "Vector_Databases": ["pinecone", "weaviate", "qdrant", "milvus", "opensearch", "elasticsearch", "faiss", "chromadb", "drant", "vector db", "vector search"],
+    "Retrieval_Ranking": ["retrieval", "ranking", "sentence-transformers", "bm25", "cross-encoder", "reranking", "learning-to-rank", "xgboost", "bge", "e5", "ndcg", "mrr", "map", "hybrid search", "recommendation"],
+    "LLM_Engineering": ["llm", "fine-tuning", "lora", "qlora", "peft", "openai", "claude", "gemini", "prompt engineering", "langchain", "llamaindex", "transformers", "huggingface"],
+    "Infrastructure": ["distributed systems", "fastapi", "flask", "django", "kubernetes", "docker", "aws", "gcp", "azure", "inference optimization", "onnx", "tensorrt", "vllm"]
+  },
   "locations": {
     "preferred": ["Pune", "Noida", "Delhi NCR"],
     "acceptable": ["Bangalore", "Bengaluru", "Hyderabad", "Mumbai", "Chennai", "Gurgaon"]
   },
-  "disqualifiers": {
-    "consulting_only": [
-      "TCS",
-      "Tata Consultancy Services",
-      "Infosys",
-      "Wipro",
-      "Accenture",
-      "Cognizant",
-      "Capgemini"
-    ]
+  "company_tiers": {
+    "tier_1": ["google", "microsoft", "amazon", "meta", "apple", "netflix", "openai", "anthropic", "deepmind", "uber", "airbnb", "stripe", "databricks"],
+    "consulting": ["tcs", "tata consultancy services", "infosys", "wipro", "accenture", "cognizant", "capgemini", "hcl", "tech mahindra", "deloitte", "pwc", "ey", "kpmg"]
   }
 }

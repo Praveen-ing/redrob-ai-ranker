@@ -58,9 +58,9 @@ def process_candidates(candidates_path, limit=100):
                 except Exception as e:
                     print(f"Error parsing candidate at line {i}: {e}")
                 
-    # Sort candidates by score descending
+    # Sort candidates by rounded score descending, then by candidate_id ascending for tie-breaks
     print(f"Sorting {len(scored_candidates)} valid candidates...")
-    scored_candidates.sort(key=lambda x: x['score'], reverse=True)
+    scored_candidates.sort(key=lambda x: (-round(x['score'], 4), x['candidate_id']))
     
     # Get top 100
     top_k = scored_candidates[:limit]
