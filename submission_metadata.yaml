@@ -1,0 +1,6 @@
+team_id: "TEAM_NAME_HERE"
+team_name: "TEAM_NAME_HERE"
+github_repo_url: "https://github.com/Praveen-ing/redrob-ai-ranker"
+sandbox_url: "https://github.com/Praveen-ing/redrob-ai-ranker"
+ai_tools_declared: true
+ai_tools_used: "Cursor/Gemini AI for code architecture and pair programming"

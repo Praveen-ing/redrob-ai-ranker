@@ -1,0 +1,16 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Data and outputs
+*.csv
+*.jsonl
+*.gz
+data/candidates*
+team_submission.csv
+
+# Environment
+.env
+venv/
+env/

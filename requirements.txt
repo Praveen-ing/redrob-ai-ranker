@@ -1,0 +1,5 @@
+# Redrob AI Ranker
+# This project is designed to run entirely on the Python Standard Library
+# to guarantee it easily fits within the 5-minute CPU constraint of the hackathon.
+
+# No external dependencies are required.
