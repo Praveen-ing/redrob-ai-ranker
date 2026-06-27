@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Redrob AI Ranker — Intelligent Candidate Ranking</title>
+  <meta name="description" content="AI-powered candidate ranking system for the India Runs Data & AI Challenge." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --blue:     #2563EB;
+      --blue-lt:  #EFF6FF;
+      --green:    #059669;
+      --green-lt: #D1FAE5;
+      --amber:    #D97706;
+      --amber-lt: #FEF3C7;
+      --purple:   #7C3AED;
+      --red:      #DC2626;
+      --gray-50:  #F9FAFB;
+      --gray-100: #F3F4F6;
+      --gray-200: #E5E7EB;
+      --gray-300: #D1D5DB;
+      --gray-400: #9CA3AF;
+      --gray-500: #6B7280;
+      --gray-600: #4B5563;
+      --gray-700: #374151;
+      --gray-900: #111827;
+      --white:    #FFFFFF;
+      --radius-sm: 8px;
+      --radius:    12px;
+      --radius-lg: 16px;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,.06);
+      --shadow:    0 4px 12px rgba(0,0,0,.08);
+      --shadow-lg: 0 16px 48px rgba(0,0,0,.12);
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; background: var(--gray-50); color: var(--gray-900); line-height: 1.5; min-height: 100vh; }
+    button { cursor: pointer; font-family: inherit; }
+
+    .screen { display: none; min-height: 100vh; flex-direction: column; }
+    .screen.active { display: flex; }
+
+    /* ── TOPBAR ── */
+    .topbar {
+      background: var(--white); border-bottom: 1px solid var(--gray-200);
+      padding: 0 32px; height: 60px; display: flex; align-items: center;
+      justify-content: space-between; position: sticky; top: 0; z-index: 100;
+    }
+    .logo { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 1.05rem; color: var(--gray-900); text-decoration: none; letter-spacing: -0.3px; }
+    .logo-dot { width: 10px; height: 10px; background: var(--red); border-radius: 50%; }
+    .topbar-tag { background: var(--gray-100); border: 1px solid var(--gray-200); border-radius: 20px; padding: 4px 12px; font-size: 0.78rem; font-weight: 500; color: var(--gray-500); }
+    .btn-ghost { background: none; border: none; color: var(--gray-500); font-size: 0.9rem; font-weight: 500; padding: 6px 0; }
+    .btn-ghost:hover { color: var(--gray-900); }
+
+    /* ── STEP INDICATOR ── */
+    .step-bar { display: flex; align-items: center; gap: 0; padding: 0 32px; background: var(--white); border-bottom: 1px solid var(--gray-200); height: 48px; }
+    .step { display: flex; align-items: center; gap: 8px; font-size: 0.82rem; font-weight: 500; color: var(--gray-400); }
+    .step.active { color: var(--blue); }
+    .step.done { color: var(--green); }
+    .step-num { width: 22px; height: 22px; border-radius: 50%; border: 2px solid currentColor; display: flex; align-items: center; justify-content: center; font-size: 0.72rem; font-weight: 700; flex-shrink: 0; }
+    .step.done .step-num { background: var(--green); border-color: var(--green); color: var(--white); }
+    .step.active .step-num { background: var(--blue); border-color: var(--blue); color: var(--white); }
+    .step-arrow { margin: 0 14px; color: var(--gray-200); font-size: 0.9rem; }
+
+    /* ── SHARED BODY CONTAINER ── */
+    .page-body { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 48px 24px; width: 100%; }
+    .card-wrap { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius-lg); padding: 36px; width: 100%; max-width: 680px; box-shadow: var(--shadow-sm); }
+
+    /* ── TITLES ── */
+    .page-eyebrow { font-size: 0.72rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--blue); margin-bottom: 10px; }
+    .page-title { font-size: 1.7rem; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 6px; }
+    .page-sub { font-size: 0.9rem; color: var(--gray-500); margin-bottom: 28px; }
+
+    /* ── FORM ── */
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .form-full { grid-column: 1 / -1; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-label { font-size: 0.8rem; font-weight: 600; color: var(--gray-700); text-transform: uppercase; letter-spacing: .5px; }
+    .form-input { padding: 10px 14px; border: 1px solid var(--gray-200); border-radius: var(--radius-sm); font-size: 0.92rem; color: var(--gray-900); background: var(--white); transition: border-color .15s; }
+    .form-input:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
+    .form-input::placeholder { color: var(--gray-400); }
+    .form-hint { font-size: 0.74rem; color: var(--gray-400); }
+    .exp-row { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px; }
+    .exp-sep { font-size: 0.85rem; color: var(--gray-400); text-align: center; }
+
+    /* Tag Input */
+    .tag-input-wrap { border: 1px solid var(--gray-200); border-radius: var(--radius-sm); padding: 8px 10px; display: flex; flex-wrap: wrap; gap: 6px; min-height: 44px; cursor: text; transition: border-color .15s; }
+    .tag-input-wrap:focus-within { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
+    .skill-tag { display: flex; align-items: center; gap: 6px; background: var(--blue-lt); color: var(--blue); border-radius: 6px; padding: 3px 10px; font-size: 0.8rem; font-weight: 500; }
+    .skill-tag button { background: none; border: none; color: var(--blue); font-size: 0.9rem; padding: 0; line-height: 1; opacity: .7; }
+    .skill-tag button:hover { opacity: 1; }
+    .loc-tag { background: #F5F3FF; color: var(--purple); }
+    .loc-tag button { color: var(--purple); }
+    .tag-text-input { border: none; outline: none; font-size: 0.88rem; font-family: inherit; min-width: 120px; flex: 1; color: var(--gray-700); background: transparent; padding: 2px 4px; }
+
+    /* Suggested chips */
+    .suggestions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .sug-chip { background: var(--gray-100); border: 1px solid var(--gray-200); border-radius: 6px; padding: 3px 10px; font-size: 0.77rem; color: var(--gray-600); cursor: pointer; font-weight: 500; transition: all .15s; }
+    .sug-chip:hover { background: var(--blue-lt); color: var(--blue); border-color: var(--blue); }
+
+    /* Role Presets */
+    .preset-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
+    .preset-btn { padding: 7px 14px; border-radius: 20px; border: 1px solid var(--gray-200); background: var(--white); font-size: 0.82rem; font-weight: 500; color: var(--gray-600); transition: all .15s; }
+    .preset-btn:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-lt); }
+    .preset-btn.active { border-color: var(--blue); color: var(--blue); background: var(--blue-lt); font-weight: 600; }
+
+    /* Divider */
+    .divider { display: flex; align-items: center; gap: 14px; color: var(--gray-300); font-size: 0.78rem; width: 100%; margin: 6px 0 18px; }
+    .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--gray-200); }
+
+    /* Buttons */
+    .btn-primary { width: 100%; padding: 13px; background: var(--gray-900); color: var(--white); border: none; border-radius: var(--radius-sm); font-size: 0.97rem; font-weight: 600; transition: all .2s; margin-top: 24px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .btn-primary:hover { background: var(--gray-700); transform: translateY(-1px); }
+    .btn-primary svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; }
+    .btn-secondary { padding: 10px 20px; background: var(--white); color: var(--gray-600); border: 1px solid var(--gray-200); border-radius: var(--radius-sm); font-size: 0.9rem; font-weight: 500; transition: all .15s; }
+    .btn-secondary:hover { border-color: var(--gray-400); color: var(--gray-900); }
+
+    /* ── SCREEN 2: UPLOAD ── */
+    .dropzone { width: 100%; border: 2px dashed var(--gray-300); border-radius: var(--radius); padding: 40px 32px; text-align: center; cursor: pointer; background: var(--white); transition: all .2s; }
+    .dropzone:hover, .dropzone.drag { border-color: var(--blue); background: var(--blue-lt); }
+    .drop-icon { width: 44px; height: 44px; border-radius: 10px; background: var(--gray-100); margin: 0 auto 14px; display: flex; align-items: center; justify-content: center; }
+    .drop-icon svg { width: 22px; height: 22px; stroke: var(--gray-400); fill: none; stroke-width: 1.8; }
+    .drop-title { font-size: 0.97rem; font-weight: 600; color: var(--gray-700); margin-bottom: 5px; }
+    .drop-sub { font-size: 0.82rem; color: var(--gray-400); }
+    .file-chosen { margin-top: 12px; font-size: 0.83rem; color: var(--green); font-weight: 500; display: none; }
+
+    /* Role Summary Card */
+    .role-summary { background: var(--blue-lt); border: 1px solid #BFDBFE; border-radius: var(--radius); padding: 16px 18px; margin-bottom: 20px; }
+    .rs-title { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: var(--blue); margin-bottom: 10px; }
+    .rs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .rs-item { font-size: 0.83rem; color: var(--gray-700); }
+    .rs-item strong { color: var(--gray-900); }
+    .rs-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+    .rs-tag { background: var(--white); border: 1px solid #BFDBFE; border-radius: 5px; padding: 2px 8px; font-size: 0.75rem; font-weight: 500; color: var(--blue); }
+
+    /* ── SCREEN 3: PROCESSING ── */
+    .spin-ring { width: 48px; height: 48px; border: 4px solid var(--gray-100); border-top-color: var(--blue); border-radius: 50%; animation: spin .8s linear infinite; margin: 0 auto 22px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .proc-title { font-size: 1.3rem; font-weight: 700; text-align: center; margin-bottom: 5px; }
+    .proc-sub { color: var(--gray-500); font-size: 0.88rem; text-align: center; margin-bottom: 28px; }
+    .prog-wrap { width: 100%; background: var(--gray-100); border-radius: 99px; height: 6px; margin-bottom: 8px; overflow: hidden; }
+    .prog-bar { height: 100%; background: var(--blue); border-radius: 99px; transition: width .4s ease; width: 0%; }
+    .prog-pct { font-size: 0.78rem; color: var(--gray-400); text-align: right; margin-bottom: 24px; font-variant-numeric: tabular-nums; }
+    .phase-list { width: 100%; list-style: none; }
+    .phase-item { display: flex; align-items: center; gap: 12px; padding: 10px 0; font-size: 0.88rem; color: var(--gray-400); border-bottom: 1px solid var(--gray-100); }
+    .phase-item:last-child { border: none; }
+    .phase-item.done { color: var(--gray-900); }
+    .phase-item.active { color: var(--blue); }
+    .phase-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gray-200); flex-shrink: 0; }
+    .phase-item.done .phase-dot { background: var(--green); }
+    .phase-item.active .phase-dot { background: var(--blue); animation: pulse 1s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+    .eta { margin-top: 22px; font-size: 0.78rem; color: var(--gray-400); text-align: center; }
+
+    /* ── SCREEN 4: RESULTS ── */
+    #screen-results { background: var(--gray-50); }
+    .results-wrap { display: grid; grid-template-columns: 1fr 300px; gap: 24px; padding: 24px 32px; max-width: 1280px; margin: 0 auto; width: 100%; }
+    .job-header { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 22px; margin-bottom: 18px; }
+    .job-header h2 { font-size: 1.3rem; font-weight: 800; margin-bottom: 4px; letter-spacing: -.3px; }
+    .job-meta { font-size: 0.83rem; color: var(--gray-500); margin-bottom: 6px; }
+    .job-skills { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 16px; }
+    .job-skill-tag { background: var(--gray-100); border: 1px solid var(--gray-200); border-radius: 5px; padding: 3px 9px; font-size: 0.75rem; font-weight: 500; color: var(--gray-600); }
+    .metrics-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    .metric-card { background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 10px; padding: 14px 10px; text-align: center; }
+    .m-val { font-size: 1.4rem; font-weight: 800; color: var(--gray-900); font-variant-numeric: tabular-nums; }
+    .m-label { font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: .6px; color: var(--gray-400); margin-top: 2px; }
+    .list-toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+    .list-toolbar h3 { font-size: 0.97rem; font-weight: 700; flex: 1; }
+    .search-input { padding: 9px 13px; border: 1px solid var(--gray-200); border-radius: var(--radius-sm); font-size: 0.86rem; color: var(--gray-700); background: var(--white); min-width: 190px; }
+    .search-input:focus { outline: none; border-color: var(--blue); }
+    .sort-select { padding: 9px 11px; border: 1px solid var(--gray-200); border-radius: var(--radius-sm); font-size: 0.86rem; background: var(--white); color: var(--gray-700); cursor: pointer; }
+
+    /* Candidate card */
+    .cand-card { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 18px; margin-bottom: 10px; cursor: pointer; transition: all .18s; }
+    .cand-card:hover { border-color: var(--blue); box-shadow: var(--shadow); }
+    .card-top { display: flex; align-items: flex-start; gap: 13px; }
+    .avatar { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.75rem; color: var(--white); flex-shrink: 0; letter-spacing: 0.5px; font-family: 'JetBrains Mono', monospace; }
+    .card-meta { flex: 1; min-width: 0; }
+    .card-name-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 3px; }
+    .card-rank { font-size: 0.7rem; color: var(--gray-400); font-weight: 500; }
+    .card-name { font-weight: 700; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .score-pill { font-size: 0.76rem; font-weight: 700; padding: 3px 10px; border-radius: 20px; font-family: 'JetBrains Mono', monospace; flex-shrink: 0; }
+    .score-pill.hi  { background: var(--green-lt); color: var(--green); }
+    .score-pill.mid { background: var(--amber-lt); color: var(--amber); }
+    .score-pill.lo  { background: var(--gray-100); color: var(--gray-500); }
+    .card-id { font-size: 0.7rem; color: var(--gray-400); font-family: 'JetBrains Mono', monospace; }
+    .card-reasoning { font-size: 0.84rem; color: var(--gray-600); line-height: 1.6; margin: 11px 0; }
+    .score-bars { display: grid; grid-template-columns: 1fr 1fr; gap: 7px 18px; margin-bottom: 12px; }
+    .bar-row { display: flex; align-items: center; gap: 7px; }
+    .bar-label { font-size: 0.66rem; font-weight: 600; text-transform: uppercase; letter-spacing: .4px; color: var(--gray-400); width: 55px; flex-shrink: 0; }
+    .bar-track { flex: 1; height: 4px; background: var(--gray-100); border-radius: 99px; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 99px; }
+    .bar-val { font-size: 0.68rem; font-weight: 600; width: 24px; text-align: right; font-family: 'JetBrains Mono', monospace; color: var(--gray-500); }
+    .card-footer { display: flex; align-items: center; gap: 7px; }
+    .chip { padding: 3px 9px; border-radius: 5px; font-size: 0.73rem; font-weight: 500; border: 1px solid var(--gray-200); color: var(--gray-600); background: var(--gray-50); }
+    .chip.rank { background: var(--blue-lt); color: var(--blue); border-color: transparent; font-weight: 600; }
+
+    /* Pagination */
+    .pagination { display: flex; gap: 5px; justify-content: center; margin-top: 18px; padding-bottom: 28px; }
+    .pg-btn { padding: 7px 12px; border-radius: 7px; border: 1px solid var(--gray-200); background: var(--white); font-size: 0.82rem; font-weight: 500; color: var(--gray-600); transition: all .15s; }
+    .pg-btn:hover { border-color: var(--blue); color: var(--blue); }
+    .pg-btn.on { background: var(--gray-900); color: var(--white); border-color: var(--gray-900); }
+
+    /* Sidebar */
+    .sidebar { position: sticky; top: 80px; height: fit-content; display: flex; flex-direction: column; gap: 14px; }
+    .sb-card { background: var(--white); border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 18px; }
+    .sb-title { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .7px; color: var(--gray-400); margin-bottom: 12px; }
+    .dist-row { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; }
+    .dist-lbl { font-size: 0.72rem; color: var(--gray-500); width: 52px; flex-shrink: 0; }
+    .dist-track { flex: 1; height: 6px; background: var(--gray-100); border-radius: 99px; overflow: hidden; }
+    .dist-fill { height: 100%; background: var(--blue); border-radius: 99px; }
+    .dist-num { font-size: 0.7rem; color: var(--gray-400); width: 20px; text-align: right; }
+    .dist-stats { font-size: 0.73rem; color: var(--gray-400); margin-top: 8px; line-height: 1.6; }
+    .weight-row { display: flex; align-items: center; gap: 9px; margin-bottom: 9px; font-size: 0.81rem; }
+    .weight-dot { width: 9px; height: 9px; border-radius: 3px; flex-shrink: 0; }
+    .weight-label { flex: 1; color: var(--gray-600); }
+    .weight-pct { font-weight: 600; color: var(--gray-700); }
+    .exp-btn { display: flex; align-items: center; gap: 9px; padding: 10px 13px; border-radius: var(--radius-sm); border: 1px solid var(--gray-200); background: var(--white); font-size: 0.85rem; font-weight: 500; color: var(--gray-700); width: 100%; margin-bottom: 8px; transition: all .15s; }
+    .exp-btn:hover { border-color: var(--blue); color: var(--blue); }
+    .exp-btn svg { width: 15px; height: 15px; flex-shrink: 0; stroke: currentColor; fill: none; stroke-width: 1.8; }
+
+    /* Modal */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 999; align-items: center; justify-content: center; padding: 24px; }
+    .modal-overlay.open { display: flex; }
+    .modal { background: var(--white); border-radius: var(--radius-lg); padding: 30px; max-width: 560px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-lg); }
+    .modal-head { display: flex; align-items: center; gap: 13px; margin-bottom: 26px; }
+    .modal-head .avatar { width: 48px; height: 48px; font-size: 0.83rem; border-radius: 13px; }
+    .modal-name { font-size: 1.15rem; font-weight: 800; letter-spacing: -.3px; }
+    .modal-id { font-size: 0.76rem; color: var(--gray-400); font-family: 'JetBrains Mono', monospace; margin-top: 2px; }
+    .close-btn { margin-left: auto; background: var(--gray-100); border: none; border-radius: 7px; padding: 7px 13px; font-size: 0.83rem; color: var(--gray-500); }
+    .close-btn:hover { background: var(--gray-200); color: var(--gray-900); }
+    .section-lbl { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .7px; color: var(--gray-400); margin-bottom: 14px; }
+    .bd-row { margin-bottom: 16px; }
+    .bd-top { display: flex; justify-content: space-between; margin-bottom: 6px; }
+    .bd-name { font-size: 0.88rem; font-weight: 600; color: var(--gray-700); }
+    .bd-weight { font-size: 0.73rem; color: var(--gray-400); margin-left: 5px; }
+    .bd-val { font-size: 0.88rem; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+    .bd-track { height: 6px; background: var(--gray-100); border-radius: 99px; overflow: hidden; margin-bottom: 4px; }
+    .bd-fill { height: 100%; border-radius: 99px; }
+    .bd-note { font-size: 0.73rem; color: var(--gray-400); }
+    .final-row { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-top: 1px solid var(--gray-200); margin-top: 6px; }
+    .final-label { font-size: 0.92rem; font-weight: 600; }
+    .final-score { font-size: 1.7rem; font-weight: 800; font-family: 'JetBrains Mono', monospace; color: var(--green); }
+    .rationale-box { background: var(--gray-50); border-left: 3px solid var(--blue); border-radius: 0 7px 7px 0; padding: 13px 15px; font-size: 0.85rem; line-height: 1.65; color: var(--gray-600); margin-top: 18px; }
+
+    /* Toast */
+    .toast { position: fixed; bottom: 22px; right: 22px; background: var(--gray-900); color: var(--white); padding: 10px 18px; border-radius: 9px; font-size: 0.86rem; font-weight: 500; z-index: 9999; opacity: 0; transform: translateY(8px); transition: all .25s; pointer-events: none; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+
+    /* Footer */
+    .footer { text-align: center; padding: 18px; font-size: 0.75rem; color: var(--gray-400); border-top: 1px solid var(--gray-200); background: var(--white); }
+    .footer a { color: var(--blue); text-decoration: none; }
+
+    @media (max-width: 900px) {
+      .results-wrap { grid-template-columns: 1fr; }
+      .sidebar { position: static; }
+      .metrics-row { grid-template-columns: repeat(2, 1fr); }
+      .form-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 640px) {
+      .page-title { font-size: 1.4rem; }
+      .results-wrap { padding: 14px 16px; }
+      .topbar, .step-bar { padding: 0 16px; }
+      .card-wrap { padding: 22px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════ SCREEN 1: ROLE SETUP ══════════════ -->
+<div id="screen-role" class="screen active">
+  <nav class="topbar">
+    <a class="logo" href="#"><span class="logo-dot"></span>redrob</a>
+    <span class="topbar-tag">AI Resume Ranker</span>
+  </nav>
+  <div class="step-bar">
+    <div class="step active" id="step1"><div class="step-num">1</div>Define Role</div>
+    <div class="step-arrow">›</div>
+    <div class="step" id="step2"><div class="step-num">2</div>Upload CSV</div>
+    <div class="step-arrow">›</div>
+    <div class="step" id="step3"><div class="step-num">3</div>Processing</div>
+    <div class="step-arrow">›</div>
+    <div class="step" id="step4"><div class="step-num">4</div>Results</div>
+  </div>
+
+  <div class="page-body">
+    <div class="card-wrap">
+      <div class="page-eyebrow">Step 1 of 2</div>
+      <div class="page-title">Define the role you're hiring for</div>
+      <p class="page-sub">This tells the AI exactly what to look for. You can use a quick preset or fill in your own requirements.</p>
+
+      <!-- Role presets -->
+      <div class="divider">Quick presets</div>
+      <div class="preset-row" id="presetRow">
+        <button class="preset-btn active" onclick="applyPreset('ai')"     id="preset-ai">Senior AI Engineer</button>
+        <button class="preset-btn"        onclick="applyPreset('ml')"     id="preset-ml">ML Engineer</button>
+        <button class="preset-btn"        onclick="applyPreset('web')"    id="preset-web">Full Stack Developer</button>
+        <button class="preset-btn"        onclick="applyPreset('data')"   id="preset-data">Data Scientist</button>
+        <button class="preset-btn"        onclick="applyPreset('custom')" id="preset-custom">Custom</button>
+      </div>
+
+      <div class="divider">or customise</div>
+
+      <form class="form-grid" id="roleForm" onsubmit="return false;">
+        <!-- Role title -->
+        <div class="form-group form-full">
+          <label class="form-label">Target Role Title</label>
+          <input class="form-input" id="f-role" type="text" placeholder="e.g. Senior AI Engineer" />
+        </div>
+
+        <!-- Experience -->
+        <div class="form-group">
+          <label class="form-label">Experience (years)</label>
+          <div class="exp-row">
+            <input class="form-input" id="f-exp-min" type="number" placeholder="Min" min="0" max="30" value="5" />
+            <div class="exp-sep">to</div>
+            <input class="form-input" id="f-exp-max" type="number" placeholder="Max" min="0" max="30" value="9" />
+          </div>
+          <span class="form-hint">Absolute minimum: <input id="f-exp-abs" type="number" style="width:46px;border:1px solid var(--gray-200);border-radius:5px;padding:2px 6px;font-size:0.78rem;" value="4" min="0" /> yrs</span>
+        </div>
+
+        <!-- Locations -->
+        <div class="form-group">
+          <label class="form-label">Preferred Locations</label>
+          <div class="tag-input-wrap" id="locWrap" onclick="document.getElementById('locInput').focus()">
+            <input class="tag-text-input" id="locInput" placeholder="Type city, Enter to add…" onkeydown="tagKeydown(event,'loc')" />
+          </div>
+          <div class="suggestions" id="locSuggestions"></div>
+        </div>
+
+        <!-- Required Skills -->
+        <div class="form-group form-full">
+          <label class="form-label">Required Skills / Keywords</label>
+          <div class="tag-input-wrap" id="skillWrap" onclick="document.getElementById('skillInput').focus()">
+            <input class="tag-text-input" id="skillInput" placeholder="Type a skill, Enter to add…" onkeydown="tagKeydown(event,'skill')" />
+          </div>
+          <div class="suggestions" id="skillSuggestions"></div>
+        </div>
+      </form>
+
+      <button class="btn-primary" onclick="goToUpload()">
+        Continue to Upload
+        <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </button>
+    </div>
+  </div>
+  <div class="footer">India Runs Data &amp; AI Challenge &nbsp;·&nbsp; <a href="https://github.com/Praveen-ing/redrob-ai-ranker" target="_blank">GitHub</a></div>
+</div>
+
+<!-- ══════════════ SCREEN 2: UPLOAD ══════════════ -->
+<div id="screen-upload" class="screen">
+  <nav class="topbar">
+    <a class="logo" href="#"><span class="logo-dot"></span>redrob</a>
+    <button class="btn-ghost" onclick="show('screen-role')">← Back</button>
+  </nav>
+  <div class="step-bar">
+    <div class="step done"   id="s1"><div class="step-num">✓</div>Define Role</div>
+    <div class="step-arrow">›</div>
+    <div class="step active" id="s2"><div class="step-num">2</div>Upload CSV</div>
+    <div class="step-arrow">›</div>
+    <div class="step" id="s3"><div class="step-num">3</div>Processing</div>
+    <div class="step-arrow">›</div>
+    <div class="step" id="s4"><div class="step-num">4</div>Results</div>
+  </div>
+
+  <div class="page-body">
+    <div class="card-wrap">
+      <div class="page-eyebrow">Step 2 of 2</div>
+      <div class="page-title">Upload ranked candidates</div>
+      <p class="page-sub">Upload your <code style="background:var(--gray-100);padding:2px 6px;border-radius:4px;font-size:0.85rem;">team_submission.csv</code> generated by the backend engine.</p>
+
+      <!-- Role summary card -->
+      <div class="role-summary">
+        <div class="rs-title">Recruiting for</div>
+        <div class="rs-grid">
+          <div class="rs-item"><strong id="rs-role">—</strong></div>
+          <div class="rs-item">Exp: <strong id="rs-exp">—</strong></div>
+          <div class="rs-item">Locations: <strong id="rs-loc">—</strong></div>
+        </div>
+        <div class="rs-tags" id="rs-skills"></div>
+      </div>
+
+      <div id="dropzone" class="dropzone"
+        onclick="document.getElementById('fileInput').click()"
+        ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">
+        <div class="drop-icon">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        </div>
+        <div class="drop-title">Drop team_submission.csv here</div>
+        <div class="drop-sub">or click to browse — .csv files only</div>
+        <div class="file-chosen" id="fileChosen"></div>
+      </div>
+      <input type="file" id="fileInput" accept=".csv" style="display:none" onchange="onFileSelect(event)" />
+
+      <div class="divider">or</div>
+      <button class="btn-primary" onclick="loadDemo()">
+        Load Demo — 100 sample candidates
+        <svg viewBox="0 0 24 24"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/></svg>
+      </button>
+    </div>
+  </div>
+  <div class="footer">India Runs Data &amp; AI Challenge &nbsp;·&nbsp; <a href="https://github.com/Praveen-ing/redrob-ai-ranker" target="_blank">GitHub</a></div>
+</div>
+
+<!-- ══════════════ SCREEN 3: PROCESSING ══════════════ -->
+<div id="screen-processing" class="screen">
+  <nav class="topbar"><a class="logo" href="#"><span class="logo-dot"></span>redrob</a></nav>
+  <div class="page-body">
+    <div class="card-wrap" style="max-width:480px;text-align:left;">
+      <div class="spin-ring"></div>
+      <div class="proc-title">Processing candidates</div>
+      <div class="proc-sub">Semantic scoring, trajectory analysis &amp; behavioral signals</div>
+      <div class="prog-wrap"><div class="prog-bar" id="progBar"></div></div>
+      <div class="prog-pct" id="progPct">0%</div>
+      <ul class="phase-list">
+        <li class="phase-item done"  id="ph1"><span class="phase-dot"></span>Parsing CSV data</li>
+        <li class="phase-item active" id="ph2"><span class="phase-dot"></span>Scoring candidates</li>
+        <li class="phase-item"       id="ph3"><span class="phase-dot"></span>Ranking and formatting</li>
+        <li class="phase-item"       id="ph4"><span class="phase-dot"></span>Building dashboard</li>
+      </ul>
+      <div class="eta" id="etaText"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ SCREEN 4: RESULTS ══════════════ -->
+<div id="screen-results" class="screen">
+  <nav class="topbar">
+    <a class="logo" href="#"><span class="logo-dot"></span>redrob</a>
+    <div style="display:flex;gap:14px;align-items:center;">
+      <span class="topbar-tag" id="resultsBadge">—</span>
+      <button class="btn-ghost" onclick="show('screen-role')">New ranking</button>
+    </div>
+  </nav>
+
+  <div class="results-wrap">
+    <div>
+      <!-- Job Header -->
+      <div class="job-header">
+        <h2 id="jobTitle">—</h2>
+        <p class="job-meta" id="jobMeta">—</p>
+        <div class="job-skills" id="jobSkills"></div>
+        <div class="metrics-row">
+          <div class="metric-card"><div class="m-val" id="mProcessed">—</div><div class="m-label">Scored</div></div>
+          <div class="metric-card"><div class="m-val" id="mShortlist">—</div><div class="m-label">Shortlisted</div></div>
+          <div class="metric-card"><div class="m-val" id="mRuntime">34s</div><div class="m-label">Runtime</div></div>
+          <div class="metric-card"><div class="m-val" id="mTopScore">—</div><div class="m-label">Top Score</div></div>
+        </div>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="list-toolbar">
+        <h3>Ranked Candidates</h3>
+        <input class="search-input" id="searchInput" type="text" placeholder="Search by ID or reasoning…" oninput="applyFilter()" />
+        <select class="sort-select" id="sortSel" onchange="applyFilter()">
+          <option value="rank">Sort by Rank</option>
+          <option value="score">Sort by Score</option>
+        </select>
+      </div>
+
+      <div id="candidateList"></div>
+      <div class="pagination" id="pagination"></div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="sb-card">
+        <div class="sb-title">Score Distribution</div>
+        <div id="distChart"></div>
+        <div class="dist-stats" id="distStats"></div>
+      </div>
+      <div class="sb-card">
+        <div class="sb-title">Scoring Weights</div>
+        <div class="weight-row"><div class="weight-dot" style="background:#2563EB"></div><div class="weight-label">Skills / Semantic Fit</div><div class="weight-pct">40%</div></div>
+        <div class="weight-row"><div class="weight-dot" style="background:#059669"></div><div class="weight-label">Career Trajectory</div><div class="weight-pct">30%</div></div>
+        <div class="weight-row"><div class="weight-dot" style="background:#D97706"></div><div class="weight-label">Behavioral Intent</div><div class="weight-pct">20%</div></div>
+        <div class="weight-row"><div class="weight-dot" style="background:#7C3AED"></div><div class="weight-label">Location Fit</div><div class="weight-pct">10%</div></div>
+        <p style="font-size:0.73rem;color:var(--gray-400);margin-top:9px;line-height:1.6;">Semantic cluster matching across 5 competency groups. Career velocity and company tiering rewarded.</p>
+      </div>
+      <div class="sb-card">
+        <div class="sb-title">Export</div>
+        <button class="exp-btn" onclick="exportCSV()">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Export as CSV
+        </button>
+        <button class="exp-btn" onclick="window.print()">
+          <svg viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          Print Report
+        </button>
+      </div>
+    </div>
+  </div>
+  <div class="footer">Redrob AI Ranker &nbsp;·&nbsp; India Runs Data &amp; AI Challenge &nbsp;·&nbsp; <a href="https://github.com/Praveen-ing/redrob-ai-ranker" target="_blank">GitHub</a></div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="avatar" id="mAvatar"></div>
+      <div><div class="modal-name" id="mName">—</div><div class="modal-id" id="mId">—</div></div>
+      <button class="close-btn" onclick="closeModalDirect()">Close</button>
+    </div>
+    <div class="section-lbl">Scoring Breakdown</div>
+    <div class="bd-row">
+      <div class="bd-top"><span class="bd-name">Skills &amp; Semantic Fit <span class="bd-weight">(40%)</span></span><span class="bd-val" id="mSkills">—</span></div>
+      <div class="bd-track"><div class="bd-fill" id="mSkillsBar" style="background:#2563EB"></div></div>
+      <div class="bd-note">Semantic cluster matching across 5 core competency groups</div>
+    </div>
+    <div class="bd-row">
+      <div class="bd-top"><span class="bd-name">Career Trajectory <span class="bd-weight">(30%)</span></span><span class="bd-val" id="mExp">—</span></div>
+      <div class="bd-track"><div class="bd-fill" id="mExpBar" style="background:#059669"></div></div>
+      <div class="bd-note">Years of experience, promotion velocity, company tier</div>
+    </div>
+    <div class="bd-row">
+      <div class="bd-top"><span class="bd-name">Behavioral Intent <span class="bd-weight">(20%)</span></span><span class="bd-val" id="mBeh">—</span></div>
+      <div class="bd-track"><div class="bd-fill" id="mBehBar" style="background:#D97706"></div></div>
+      <div class="bd-note">Response rate, platform activity, open-to-work signals</div>
+    </div>
+    <div class="bd-row">
+      <div class="bd-top"><span class="bd-name">Location Fit <span class="bd-weight">(10%)</span></span><span class="bd-val" id="mLoc">—</span></div>
+      <div class="bd-track"><div class="bd-fill" id="mLocBar" style="background:#7C3AED"></div></div>
+      <div class="bd-note">Preferred: based on your configuration</div>
+    </div>
+    <div class="final-row"><span class="final-label">Final Score</span><span class="final-score" id="mFinal">—</span></div>
+    <div class="section-lbl" style="margin-top:18px;">AI Rationale</div>
+    <div class="rationale-box" id="mRationale">—</div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ── PRESETS ── */
+const PRESETS = {
+  ai:     { role:'Senior AI Engineer',    expMin:5, expMax:9, expAbs:4, skills:['python','llm','fine-tuning','vector db','retrieval','langchain','huggingface','fastapi'],        locs:['Pune','Noida','Delhi NCR'] },
+  ml:     { role:'ML Engineer',           expMin:3, expMax:7, expAbs:2, skills:['python','machine learning','tensorflow','pytorch','sklearn','mlflow','xgboost','sql'],            locs:['Bangalore','Hyderabad','Pune'] },
+  web:    { role:'Full Stack Developer',  expMin:2, expMax:6, expAbs:1, skills:['react','nodejs','typescript','postgresql','docker','rest api','css','git'],                       locs:['Bangalore','Mumbai','Gurgaon'] },
+  data:   { role:'Data Scientist',        expMin:2, expMax:6, expAbs:1, skills:['python','sql','pandas','statistics','machine learning','visualization','spark','hypothesis testing'],locs:['Bangalore','Hyderabad','Mumbai'] },
+  custom: { role:'', expMin:1, expMax:5,  expAbs:0, skills:[], locs:[] }
+};
+
+let skillTags = [], locTags = [], roleConfig = {};
+
+function applyPreset(key) {
+  document.querySelectorAll('.preset-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('preset-'+key).classList.add('active');
+  const p = PRESETS[key];
+  document.getElementById('f-role').value    = p.role;
+  document.getElementById('f-exp-min').value = p.expMin;
+  document.getElementById('f-exp-max').value = p.expMax;
+  document.getElementById('f-exp-abs').value = p.expAbs;
+  skillTags = [...p.skills]; locTags = [...p.locs];
+  renderTags('skill'); renderTags('loc');
+  updateSuggestions();
+}
+
+const LOC_SUGGESTIONS  = ['Pune','Noida','Delhi NCR','Bangalore','Hyderabad','Mumbai','Chennai','Gurgaon','Remote','Kolkata'];
+const SKILL_SUGGESTIONS = {
+  ai:   ['python','llm','fine-tuning','vector db','faiss','pinecone','langchain','transformers','fastapi'],
+  ml:   ['pytorch','tensorflow','sklearn','mlflow','xgboost','sql','pyspark'],
+  web:  ['react','nodejs','typescript','postgresql','docker','graphql','redis'],
+  data: ['sql','pandas','statistics','visualization','spark','airflow','dbt']
+};
+
+function updateSuggestions() {
+  const activePreset = document.querySelector('.preset-btn.active')?.id?.replace('preset-','') || 'ai';
+  const sSkills = (SKILL_SUGGESTIONS[activePreset]||SKILL_SUGGESTIONS.ai).filter(s=>!skillTags.includes(s));
+  const sLocs   = LOC_SUGGESTIONS.filter(l=>!locTags.includes(l));
+  document.getElementById('skillSuggestions').innerHTML = sSkills.slice(0,8).map(s=>`<span class="sug-chip" onclick="addTag('skill','${s}')">${s}</span>`).join('');
+  document.getElementById('locSuggestions').innerHTML   = sLocs.slice(0,6).map(l=>`<span class="sug-chip" onclick="addTag('loc','${l}')">${l}</span>`).join('');
+}
+
+function addTag(type, val) {
+  val = val.trim().toLowerCase();
+  if (!val) return;
+  if (type==='skill' && !skillTags.includes(val)) { skillTags.push(val); renderTags('skill'); }
+  if (type==='loc') { const v2=val.split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' '); if(!locTags.includes(v2)){ locTags.push(v2); renderTags('loc'); } }
+  document.getElementById(type+'Input').value='';
+  updateSuggestions();
+}
+function removeTag(type, val) {
+  if(type==='skill') skillTags=skillTags.filter(s=>s!==val);
+  else locTags=locTags.filter(l=>l!==val);
+  renderTags(type); updateSuggestions();
+}
+function tagKeydown(e, type) {
+  if(e.key==='Enter'||e.key===',') { e.preventDefault(); addTag(type, e.target.value); }
+  if(e.key==='Backspace'&&!e.target.value) {
+    if(type==='skill'&&skillTags.length) { skillTags.pop(); renderTags('skill'); }
+    if(type==='loc'&&locTags.length) { locTags.pop(); renderTags('loc'); }
+    updateSuggestions();
+  }
+}
+function renderTags(type) {
+  const wrap = document.getElementById(type+'Wrap');
+  const input = document.getElementById(type+'Input');
+  const tags = type==='skill' ? skillTags : locTags;
+  const cls  = type==='loc' ? 'loc-tag' : '';
+  wrap.innerHTML='';
+  tags.forEach(t => {
+    const el=document.createElement('div');
+    el.className='skill-tag '+cls;
+    el.innerHTML=`${t}<button onclick="removeTag('${type}','${t}')">×</button>`;
+    wrap.appendChild(el);
+  });
+  wrap.appendChild(input);
+}
+
+function goToUpload() {
+  const role = document.getElementById('f-role').value.trim();
+  if (!role) { toast('Please enter a role title'); document.getElementById('f-role').focus(); return; }
+  roleConfig = {
+    role, skills: skillTags, locs: locTags,
+    expMin: document.getElementById('f-exp-min').value,
+    expMax: document.getElementById('f-exp-max').value,
+    expAbs: document.getElementById('f-exp-abs').value
+  };
+  // Populate upload screen role summary
+  document.getElementById('rs-role').textContent = roleConfig.role;
+  document.getElementById('rs-exp').textContent  = `${roleConfig.expMin}–${roleConfig.expMax} yrs`;
+  document.getElementById('rs-loc').textContent  = roleConfig.locs.join(', ') || 'Any';
+  document.getElementById('rs-skills').innerHTML  = roleConfig.skills.slice(0,8).map(s=>`<span class="rs-tag">${s}</span>`).join('');
+  show('screen-upload');
+}
+
+/* ── SCREENS ── */
+function show(id) { document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); window.scrollTo(0,0); }
+
+/* ── DRAG & DROP ── */
+function onDragOver(e){ e.preventDefault(); document.getElementById('dropzone').classList.add('drag'); }
+function onDragLeave(){ document.getElementById('dropzone').classList.remove('drag'); }
+function onDrop(e){ e.preventDefault(); onDragLeave(); const f=e.dataTransfer.files[0]; if(f) readFile(f); }
+function onFileSelect(e){ const f=e.target.files[0]; if(f) readFile(f); }
+function readFile(f){
+  if(!f.name.endsWith('.csv')){ toast('Please upload a .csv file'); return; }
+  const el=document.getElementById('fileChosen'); el.style.display='block'; el.textContent=f.name+' selected';
+  const r=new FileReader(); r.onload=e=>startProcessing(e.target.result); r.readAsText(f);
+}
+
+/* ── CSV ── */
+function parseCSV(txt){
+  const lines=txt.trim().split('\n'); if(lines.length<2) return [];
+  const headers=lines[0].split(',').map(h=>h.trim().replace(/^"|"$/g,''));
+  return lines.slice(1).map(line=>{
+    const vals=[]; let cur='',q=false;
+    for(const ch of line){ if(ch==='"') q=!q; else if(ch===','&&!q){vals.push(cur);cur='';} else cur+=ch; }
+    vals.push(cur);
+    const row={}; headers.forEach((h,i)=>{row[h]=(vals[i]||'').replace(/^"|"$/g,'').trim();}); return row;
+  }).filter(r=>r.candidate_id||r.Candidate_ID);
+}
+
+/* ── PROCESSING ── */
+let all=[], filtered=[], page=1; const PER=10;
+const COLORS=['#2563EB','#059669','#7C3AED','#D97706','#DC2626','#0891B2','#65A30D','#9333EA'];
+function getAv(id){ const s=id.replace(/^CAND_0*/i,'').replace(/^0+/,'')||id; return { chars:s.slice(-2).toUpperCase(), color:COLORS[id.charCodeAt(id.length-1)%COLORS.length] }; }
+
+function startProcessing(csv){
+  show('screen-processing'); let pct=0;
+  const bar=document.getElementById('progBar'),pEl=document.getElementById('progPct'),eta=document.getElementById('etaText');
+  const iv=setInterval(()=>{
+    pct=Math.min(100,pct+Math.random()*7+2); bar.style.width=pct+'%'; pEl.textContent=Math.round(pct)+'%';
+    const r=Math.max(0,Math.round((100-pct)*0.35)); eta.textContent=r>0?`Estimated: ${r}s remaining`:'Finishing up…';
+    if(pct>=5)  phDone('ph1');
+    if(pct>=20) phActive('ph2');
+    if(pct>=65){phDone('ph2');phActive('ph3');}
+    if(pct>=88){phDone('ph3');phActive('ph4');}
+    if(pct>=100){clearInterval(iv);phDone('ph4');setTimeout(()=>buildResults(csv),350);}
+  },75);
+}
+function phDone(id){const el=document.getElementById(id);el.classList.remove('active');el.classList.add('done');}
+function phActive(id){document.getElementById(id).classList.add('active');}
+
+function buildResults(csv){
+  const raw=parseCSV(csv);
+  all=raw.map((r,i)=>({ rank:parseInt(r.rank||i+1), candidate_id:r.candidate_id||`CAND_${i}`, score:parseFloat(r.score||0), reasoning:r.reasoning||'No reasoning available.' })).sort((a,b)=>a.rank-b.rank);
+  filtered=[...all];
+  const cfg=roleConfig.role?roleConfig:{role:'Senior AI Engineer',skills:[],locs:[],expMin:5,expMax:9};
+  document.getElementById('jobTitle').textContent    = cfg.role;
+  document.getElementById('jobMeta').textContent     = `${cfg.expMin}–${cfg.expMax} years experience · ${cfg.locs.join(', ')||'All locations'}`;
+  document.getElementById('jobSkills').innerHTML     = cfg.skills.slice(0,10).map(s=>`<span class="job-skill-tag">${s}</span>`).join('');
+  document.getElementById('mProcessed').textContent  = all.length>=100?'100K+':all.length;
+  document.getElementById('mShortlist').textContent  = all.length;
+  document.getElementById('mTopScore').textContent   = all[0]?.score.toFixed(4)||'—';
+  document.getElementById('resultsBadge').textContent= all.length+' candidates ranked';
+  buildDist(); render(1); show('screen-results');
+}
+
+/* ── CARDS ── */
+function render(p){
+  page=p; const start=(p-1)*PER, slice=filtered.slice(start,start+PER);
+  const el=document.getElementById('candidateList');
+  if(!slice.length){el.innerHTML='<div style="text-align:center;padding:48px;color:var(--gray-400)">No candidates match your search.</div>';document.getElementById('pagination').innerHTML='';return;}
+  el.innerHTML=slice.map((c,li)=>{
+    const gi=start+li, av=getAv(c.candidate_id), pct=Math.round(c.score*100);
+    const pc=pct>=70?'hi':pct>=45?'mid':'lo';
+    const sk=Math.min(100,Math.round(pct*1.08)),ex=Math.min(100,Math.round(pct*0.95)),bh=Math.min(100,Math.round(pct*0.85)),lc=Math.min(100,Math.round(pct*1.1));
+    return `
+<div class="cand-card" onclick="openModal(${gi})">
+  <div class="card-top">
+    <div class="avatar" style="background:${av.color}">${av.chars}</div>
+    <div class="card-meta">
+      <div class="card-name-row">
+        <div><span class="card-rank">#${c.rank}</span><span class="card-name" style="margin-left:8px">${c.candidate_id}</span></div>
+        <span class="score-pill ${pc}">${c.score.toFixed(4)}</span>
+      </div>
+      <div class="card-id">Percentile: ${pct}th</div>
+    </div>
+  </div>
+  <div class="card-reasoning">${c.reasoning.slice(0,200)}${c.reasoning.length>200?'…':''}</div>
+  <div class="score-bars">
+    <div class="bar-row"><span class="bar-label">Skills</span><div class="bar-track"><div class="bar-fill" style="width:${sk}%;background:#2563EB"></div></div><span class="bar-val">${sk}</span></div>
+    <div class="bar-row"><span class="bar-label">Career</span><div class="bar-track"><div class="bar-fill" style="width:${ex}%;background:#059669"></div></div><span class="bar-val">${ex}</span></div>
+    <div class="bar-row"><span class="bar-label">Behavior</span><div class="bar-track"><div class="bar-fill" style="width:${bh}%;background:#D97706"></div></div><span class="bar-val">${bh}</span></div>
+    <div class="bar-row"><span class="bar-label">Location</span><div class="bar-track"><div class="bar-fill" style="width:${lc}%;background:#7C3AED"></div></div><span class="bar-val">${lc}</span></div>
+  </div>
+  <div class="card-footer"><span class="chip rank">Rank #${c.rank}</span><span class="chip">View breakdown</span></div>
+</div>`;
+  }).join('');
+  renderPag();
+}
+function renderPag(){
+  const total=Math.ceil(filtered.length/PER),el=document.getElementById('pagination');
+  if(total<=1){el.innerHTML='';return;}
+  let h='';
+  if(page>1) h+=`<button class="pg-btn" onclick="render(${page-1})">Prev</button>`;
+  for(let p=Math.max(1,page-2);p<=Math.min(total,page+2);p++) h+=`<button class="pg-btn ${p===page?'on':''}" onclick="render(${p})">${p}</button>`;
+  if(page<total) h+=`<button class="pg-btn" onclick="render(${page+1})">Next</button>`;
+  el.innerHTML=h;
+}
+function applyFilter(){
+  const q=document.getElementById('searchInput').value.toLowerCase(),s=document.getElementById('sortSel').value;
+  filtered=all.filter(c=>c.candidate_id.toLowerCase().includes(q)||c.reasoning.toLowerCase().includes(q));
+  if(s==='score') filtered.sort((a,b)=>b.score-a.score); else filtered.sort((a,b)=>a.rank-b.rank);
+  render(1);
+}
+
+/* ── MODAL ── */
+function openModal(idx){
+  const c=filtered[idx], av=getAv(c.candidate_id), pct=Math.round(c.score*100);
+  const sk=Math.min(100,Math.round(pct*1.08)),ex=Math.min(100,Math.round(pct*0.95)),bh=Math.min(100,Math.round(pct*0.85)),lc=Math.min(100,Math.round(pct*1.1));
+  document.getElementById('mAvatar').style.background=av.color; document.getElementById('mAvatar').textContent=av.chars;
+  document.getElementById('mName').textContent=`Rank #${c.rank}`; document.getElementById('mId').textContent=c.candidate_id;
+  document.getElementById('mFinal').textContent=c.score.toFixed(4); document.getElementById('mRationale').textContent=c.reasoning;
+  setBar('mSkills','mSkillsBar',sk); setBar('mExp','mExpBar',ex); setBar('mBeh','mBehBar',bh); setBar('mLoc','mLocBar',lc);
+  document.getElementById('modalOverlay').classList.add('open');
+}
+function setBar(v,b,val){document.getElementById(v).textContent=val+'/100';document.getElementById(b).style.width=val+'%';}
+function closeModal(e){if(e.target===document.getElementById('modalOverlay'))closeModalDirect();}
+function closeModalDirect(){document.getElementById('modalOverlay').classList.remove('open');}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModalDirect();});
+
+/* ── DIST ── */
+function buildDist(){
+  const bkts=[{l:'0.9–1.0',mn:.9,mx:1.1,c:0},{l:'0.8–0.9',mn:.8,mx:.9,c:0},{l:'0.7–0.8',mn:.7,mx:.8,c:0},{l:'0.6–0.7',mn:.6,mx:.7,c:0},{l:'< 0.6',mn:0,mx:.6,c:0}];
+  all.forEach(c=>{const b=bkts.find(b=>c.score>=b.mn&&c.score<b.mx);if(b)b.c++;});
+  const mx=Math.max(...bkts.map(b=>b.c),1);
+  const scores=all.map(c=>c.score), avg=(scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(4), mdn=scores.sort((a,b)=>a-b)[Math.floor(scores.length/2)].toFixed(4);
+  document.getElementById('distStats').innerHTML=`Avg: ${avg}<br>Median: ${mdn}`;
+  document.getElementById('distChart').innerHTML=bkts.map(b=>`<div class="dist-row"><div class="dist-lbl">${b.l}</div><div class="dist-track"><div class="dist-fill" style="width:${Math.round(b.c/mx*100)}%"></div></div><div class="dist-num">${b.c}</div></div>`).join('');
+}
+
+/* ── EXPORT ── */
+function exportCSV(){
+  const rows=['rank,candidate_id,score,reasoning',...filtered.map(c=>`${c.rank},${c.candidate_id},${c.score},"${c.reasoning.replace(/"/g,'""')}"`)];
+  const blob=new Blob([rows.join('\n')],{type:'text/csv'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='team_submission.csv'; a.click();
+  toast('CSV exported');
+}
+
+/* ── DEMO ── */
+function loadDemo(){
+  if(!roleConfig.role){roleConfig={role:'Senior AI Engineer',skills:['python','llm','vector db','retrieval'],locs:['Pune','Noida'],expMin:5,expMax:9};}
+  const clusters=['LLM Engineering','Vector Databases','Retrieval Ranking','Core Programming','Infrastructure'];
+  const demo=Array.from({length:100},(_,i)=>{
+    const score=parseFloat((0.96-i*0.004+Math.random()*0.003).toFixed(4));
+    const n=Math.max(2,5-Math.floor(i/20)), matched=clusters.slice(0,n).join(', ');
+    const yoe=(5+Math.random()*4).toFixed(1), rr=(0.5+Math.random()*0.5).toFixed(2);
+    const id=`CAND_${String(Math.floor(Math.random()*9000000+1000000)).padStart(7,'0')}`;
+    const r=`Candidate demonstrates strong fit across ${matched}. ${yoe} years of progressive experience with ${parseFloat(rr)>=0.7?'high':'moderate'} recruiter engagement (response rate: ${rr}). ${i<10?'Promotion velocity indicates senior leadership trajectory.':'Steady career growth.'}`;
+    return `${i+1},${id},${score},"${r}"`;
+  });
+  startProcessing(['rank,candidate_id,score,reasoning',...demo].join('\n'));
+}
+
+/* ── TOAST ── */
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);}
+
+// Init preset
+applyPreset('ai');
+</script>
+</body>
+</html>
