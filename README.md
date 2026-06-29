@@ -2,6 +2,13 @@
 
 > **India Runs — Data & AI Challenge** | Intelligent Candidate Discovery & Ranking
 
+## Team TOPGUN
+
+- **Nethavath Praveen** (Team Lead) - praveeeening@gmail.com
+- **Abhinaya Nunna** - abhinayaseven@gmail.com
+- **Botsa Radesh** - radeshbotsa@gmail.com
+- **Sai Sameer Killamsetti** - saisameerkillamsetty8@gmail.com
+
 
 A **production-grade, fully offline AI candidate ranking engine** built for the Redrob Data & AI Hackathon. It processes **100,000+ candidate profiles in under 35 seconds** — with zero API calls, zero internet dependency, and a transparent scoring system that works like an expert recruiter, not a keyword matcher.
 
@@ -281,11 +288,4 @@ rank,candidate_id,score,reasoning
 | `score` | float (4 dp) | Composite score 0.0–1.0 |
 | `reasoning` | string | AI-generated rationale for this candidate's rank |
 
----
 
-## Team TOPGUN
-
-- **Nethavath Praveen** (Team Lead) - praveeeening@gmail.com
-- **Abhinaya Nunna** - abhinayaseven@gmail.com
-- **Botsa Radesh** - radeshbotsa@gmail.com
-- **Sai Sameer Killamsetti** - saisameerkillamsetty8@gmail.com
