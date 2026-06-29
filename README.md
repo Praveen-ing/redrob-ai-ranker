@@ -11,6 +11,7 @@ A **production-grade, fully offline AI candidate ranking engine** built for the 
 
 ---
 
+
 ## 🎯 The Problem We're Solving
 
 Traditional HR tools rank candidates by **keyword frequency**. If a job description says "Python", the tool finds everyone who wrote "Python" anywhere on their resume. That's it.
