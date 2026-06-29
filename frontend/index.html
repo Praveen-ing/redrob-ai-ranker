@@ -431,6 +431,79 @@
       color: var(--gray-400);
       margin-top: 1px;
     }
+
+    /* Feedback buttons on cards */
+    .btn-feedback {
+      background: none;
+      border: 1px solid var(--gray-200);
+      border-radius: 6px;
+      padding: 3px 10px;
+      font-size: 0.73rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s;
+    }
+    .btn-feedback.accept {
+      color: var(--green);
+      background: var(--green-lt);
+      border-color: transparent;
+    }
+    .btn-feedback.accept:hover {
+      background: #a7f3d0;
+    }
+    .btn-feedback.decline {
+      color: var(--red);
+      background: #FEE2E2;
+      border-color: transparent;
+    }
+    .btn-feedback.decline:hover {
+      background: #fecaca;
+    }
+
+    /* Auto-tuning alert card in sidebar */
+    .tuning-alert {
+      background: #EFF6FF;
+      border: 1px dashed #3B82F6;
+      border-radius: var(--radius);
+      padding: 14px;
+      margin-bottom: 14px;
+      display: none; /* Shown dynamically when active */
+    }
+    .tuning-alert-title {
+      font-size: 0.76rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      color: #1D4ED8;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .tuning-alert-text {
+      font-size: 0.75rem;
+      color: #1E40AF;
+      line-height: 1.5;
+    }
+    .btn-reset-tuning {
+      background: var(--white);
+      border: 1px solid #BFDBFE;
+      color: #1D4ED8;
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      margin-top: 8px;
+      cursor: pointer;
+      width: 100%;
+      transition: all 0.15s;
+    }
+    .btn-reset-tuning:hover {
+      background: #DBEAFE;
+    }
   </style>
 </head>
 <body>
@@ -637,6 +710,18 @@
         <div id="distChart"></div>
         <div class="dist-stats" id="distStats"></div>
       </div>
+      <!-- Recruiter Auto-Tuning Status -->
+      <div class="tuning-alert" id="tuningAlert">
+        <div class="tuning-alert-title">
+          <svg viewBox="0 0 24 24" style="width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:2.5;"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+          AI Tuning Active
+        </div>
+        <div class="tuning-alert-text">
+          Weights are dynamically self-tuning based on your accepted/declined candidate profiles.
+        </div>
+        <button class="btn-reset-tuning" onclick="resetWeights()">Reset to Defaults</button>
+      </div>
+
       <div class="sb-card">
         <div class="sb-title">Interactive Weights Sandbox</div>
         <div class="weight-row" style="flex-direction:column; align-items:stretch; gap:4px; margin-bottom:12px;">
@@ -889,6 +974,93 @@ function phActive(id){document.getElementById(id).classList.add('active');}
 
 let currentWeights = { skills: 40, experience: 30, behavioral: 20, location: 10 };
 
+// Load weights from localStorage
+const savedWeights = localStorage.getItem('tunedWeights');
+if (savedWeights) {
+  try {
+    currentWeights = JSON.parse(savedWeights);
+  } catch(e) {}
+}
+
+function updateTuningStatus() {
+  const isDefault = Math.round(currentWeights.skills) === 40 &&
+                    Math.round(currentWeights.experience) === 30 &&
+                    Math.round(currentWeights.behavioral) === 20 &&
+                    Math.round(currentWeights.location) === 10;
+  const alertEl = document.getElementById('tuningAlert');
+  if (alertEl) {
+    alertEl.style.display = isDefault ? 'none' : 'block';
+  }
+}
+
+function trainWeights(idx, isAccept) {
+  const keys = ['skills', 'experience', 'behavioral', 'location'];
+  const cand = filtered[idx];
+  if (!cand) return;
+  
+  // Calculate average scores in the current shortlist
+  const count = all.length || 1;
+  const avg = { skills: 0, experience: 0, behavioral: 0, location: 0 };
+  all.forEach(c => {
+    avg.skills += c.raw_skills;
+    avg.experience += c.raw_experience;
+    avg.behavioral += c.raw_behavioral;
+    avg.location += c.raw_location;
+  });
+  keys.forEach(k => avg[k] /= count);
+
+  // Reinforcement learning weight update step
+  const alpha = 0.08; // learning rate
+  const sign = isAccept ? 1.0 : -1.0;
+  
+  keys.forEach(k => {
+    const diff = cand['raw_' + k] - avg[k];
+    currentWeights[k] += sign * alpha * diff;
+    currentWeights[k] = Math.max(0, currentWeights[k]); // clip to min 0
+  });
+
+  // Normalize weights to sum to 100
+  const sum = keys.reduce((s, k) => s + currentWeights[k], 0);
+  if (sum > 0) {
+    keys.forEach(k => {
+      currentWeights[k] = (currentWeights[k] / sum) * 100;
+    });
+  } else {
+    currentWeights = { skills: 40, experience: 30, behavioral: 20, location: 10 };
+  }
+
+  // Persist tuned weights
+  localStorage.setItem('tunedWeights', JSON.stringify(currentWeights));
+
+  // Sync inputs and displays
+  keys.forEach(k => {
+    const rounded = Math.round(currentWeights[k]);
+    const slide = document.getElementById('slide-' + k);
+    const label = document.getElementById('val-' + k);
+    if (slide) slide.value = rounded;
+    if (label) label.textContent = rounded + '%';
+  });
+
+  recalculateScores();
+  toast(isAccept ? `Tuned weights based on Invite for: ${cand.candidate_id}` : `Tuned weights based on Decline for: ${cand.candidate_id}`);
+}
+
+function resetWeights() {
+  currentWeights = { skills: 40, experience: 30, behavioral: 20, location: 10 };
+  localStorage.removeItem('tunedWeights');
+  
+  const keys = ['skills', 'experience', 'behavioral', 'location'];
+  keys.forEach(k => {
+    const slide = document.getElementById('slide-' + k);
+    const label = document.getElementById('val-' + k);
+    if (slide) slide.value = currentWeights[k];
+    if (label) label.textContent = currentWeights[k] + '%';
+  });
+
+  recalculateScores();
+  toast("Scoring weights reset to system defaults.");
+}
+
 function adjustWeights(changedId) {
   const ids = ['skills', 'experience', 'behavioral', 'location'];
   const changedVal = parseInt(document.getElementById('slide-' + changedId).value);
@@ -912,6 +1084,9 @@ function adjustWeights(changedId) {
     document.getElementById('slide-' + id).value = rounded;
     document.getElementById('val-' + id).textContent = rounded + '%';
   });
+
+  // Save to localStorage when recruiter adjusts sliders manually
+  localStorage.setItem('tunedWeights', JSON.stringify(currentWeights));
 
   recalculateScores();
 }
@@ -937,6 +1112,7 @@ function recalculateScores() {
     c.rank = idx + 1;
   });
 
+  updateTuningStatus();
   applyFilter();
   buildDist();
 }
@@ -1013,7 +1189,22 @@ function render(p){
     <div class="bar-row"><span class="bar-label">Behavior</span><div class="bar-track"><div class="bar-fill" style="width:${bh}%;background:#D97706"></div></div><span class="bar-val">${bh}</span></div>
     <div class="bar-row"><span class="bar-label">Location</span><div class="bar-track"><div class="bar-fill" style="width:${lc}%;background:#7C3AED"></div></div><span class="bar-val">${lc}</span></div>
   </div>
-  <div class="card-footer"><span class="chip rank">Rank #${c.rank}</span><span class="chip">View breakdown</span></div>
+  <div class="card-footer" style="display:flex; justify-content:space-between; align-items:center;">
+    <div style="display:flex; gap:7px;">
+      <span class="chip rank">Rank #${c.rank}</span>
+      <span class="chip">View breakdown</span>
+    </div>
+    <div style="display:flex; gap:6px;" onclick="event.stopPropagation()">
+      <button class="btn-feedback accept" onclick="trainWeights(${gi}, true)">
+        <svg viewBox="0 0 24 24" style="width:11px; height:11px; stroke:currentColor; fill:none; stroke-width:3.2;"><polyline points="20 6 9 17 4 12"/></svg>
+        Invite
+      </button>
+      <button class="btn-feedback decline" onclick="trainWeights(${gi}, false)">
+        <svg viewBox="0 0 24 24" style="width:11px; height:11px; stroke:currentColor; fill:none; stroke-width:3.2;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        Decline
+      </button>
+    </div>
+  </div>
 </div>`;
   }).join('');
   renderPag();
