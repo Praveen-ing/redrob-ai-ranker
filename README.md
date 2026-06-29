@@ -13,8 +13,6 @@
 A **production-grade, fully offline AI candidate ranking engine** built for the Redrob Data & AI Hackathon. It processes **100,000+ candidate profiles in under 35 seconds** — with zero API calls, zero internet dependency, and a transparent scoring system that works like an expert recruiter, not a keyword matcher.
 
 ---
-
-
 ## The Problem We're Solving
 
 Traditional HR tools rank candidates by **keyword frequency**. If a job description says "Python", the tool finds everyone who wrote "Python" anywhere on their resume. This limits the scope of evaluation.
