@@ -4,8 +4,8 @@
 
 ## Team TOPGUN
 
-- **Nethavath Praveen** (Team Lead) - praveeeening@gmail.com
-- **Abhinaya Nunna** - abhinayaseven@gmail.com
+- **Nethavath Praveen** - praveeeening@gmail.com
+- **Sri Abhinaya** - abhinayaseven@gmail.com
 - **Botsa Radesh** - radeshbotsa@gmail.com
 - **Sai Sameer Killamsetti** - saisameerkillamsetty8@gmail.com
 
