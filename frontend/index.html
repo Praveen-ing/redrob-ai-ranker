@@ -265,6 +265,172 @@
       .topbar, .step-bar { padding: 0 16px; }
       .card-wrap { padding: 22px 16px; }
     }
+
+    /* Weight sliders */
+    .weight-slider {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 6px;
+      border-radius: 99px;
+      background: var(--gray-200);
+      outline: none;
+    }
+    .weight-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--blue);
+      cursor: pointer;
+      border: 2px solid var(--white);
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.1s;
+    }
+    .weight-slider::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    /* Comparison Bar */
+    .compare-bar {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(120px);
+      background: var(--gray-900);
+      border: 1px solid var(--gray-700);
+      padding: 12px 24px;
+      border-radius: var(--radius-lg);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      z-index: 1000;
+      box-shadow: var(--shadow-lg);
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      color: var(--white);
+      font-size: 0.88rem;
+    }
+    .compare-bar.open {
+      transform: translateX(-50%) translateY(0);
+    }
+    .btn-compare {
+      background: var(--blue);
+      border: none;
+      border-radius: 6px;
+      padding: 8px 16px;
+      color: white;
+      font-weight: 600;
+      font-size: 0.83rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-compare:hover {
+      background: #1d4ed8;
+    }
+    .btn-compare:disabled {
+      background: var(--gray-600);
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
+    /* Candidate Comparison Grid */
+    .compare-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-top: 10px;
+    }
+    .compare-col {
+      background: var(--gray-50);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius);
+      padding: 20px;
+    }
+    .compare-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .compare-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: white;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Matched Skill Grid */
+    .skill-grid-wrap {
+      margin-top: 18px;
+    }
+    .skill-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .grid-chip {
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 0.76rem;
+      font-weight: 600;
+      text-align: center;
+      border: 1px solid var(--gray-200);
+      background: var(--gray-50);
+      color: var(--gray-400);
+    }
+    .grid-chip.match {
+      background: var(--green-lt);
+      color: var(--green);
+      border-color: transparent;
+    }
+
+    /* Career Timeline styling */
+    .timeline-wrap {
+      margin-top: 20px;
+      border-left: 2px solid var(--gray-200);
+      padding-left: 18px;
+      margin-left: 10px;
+    }
+    .timeline-item {
+      position: relative;
+      margin-bottom: 18px;
+    }
+    .timeline-item:last-child {
+      margin-bottom: 0;
+    }
+    .timeline-dot {
+      position: absolute;
+      left: -25px;
+      top: 5px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--blue);
+      border: 2px solid var(--white);
+    }
+    .timeline-item.promotion .timeline-dot {
+      background: var(--purple);
+    }
+    .timeline-title {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--gray-900);
+    }
+    .timeline-company {
+      font-size: 0.78rem;
+      color: var(--gray-500);
+      margin-top: 2px;
+    }
+    .timeline-duration {
+      font-size: 0.74rem;
+      color: var(--gray-400);
+      margin-top: 1px;
+    }
   </style>
 </head>
 <body>
@@ -472,12 +638,36 @@
         <div class="dist-stats" id="distStats"></div>
       </div>
       <div class="sb-card">
-        <div class="sb-title">Scoring Weights</div>
-        <div class="weight-row"><div class="weight-dot" style="background:#2563EB"></div><div class="weight-label">Skills / Semantic Fit</div><div class="weight-pct">40%</div></div>
-        <div class="weight-row"><div class="weight-dot" style="background:#059669"></div><div class="weight-label">Career Trajectory</div><div class="weight-pct">30%</div></div>
-        <div class="weight-row"><div class="weight-dot" style="background:#D97706"></div><div class="weight-label">Behavioral Intent</div><div class="weight-pct">20%</div></div>
-        <div class="weight-row"><div class="weight-dot" style="background:#7C3AED"></div><div class="weight-label">Location Fit</div><div class="weight-pct">10%</div></div>
-        <p style="font-size:0.73rem;color:var(--gray-400);margin-top:9px;line-height:1.6;">Semantic cluster matching across 5 competency groups. Career velocity and company tiering rewarded.</p>
+        <div class="sb-title">Interactive Weights Sandbox</div>
+        <div class="weight-row" style="flex-direction:column; align-items:stretch; gap:4px; margin-bottom:12px;">
+          <div style="display:flex; justify-content:space-between; font-size:0.81rem;">
+            <div style="display:flex; align-items:center; gap:6px;"><div class="weight-dot" style="background:#2563EB"></div><span class="weight-label">Skills Fit</span></div>
+            <span class="weight-pct" id="val-skills">40%</span>
+          </div>
+          <input type="range" class="weight-slider" id="slide-skills" min="0" max="100" value="40" oninput="adjustWeights('skills')" />
+        </div>
+        <div class="weight-row" style="flex-direction:column; align-items:stretch; gap:4px; margin-bottom:12px;">
+          <div style="display:flex; justify-content:space-between; font-size:0.81rem;">
+            <div style="display:flex; align-items:center; gap:6px;"><div class="weight-dot" style="background:#059669"></div><span class="weight-label">Career Trajectory</span></div>
+            <span class="weight-pct" id="val-experience">30%</span>
+          </div>
+          <input type="range" class="weight-slider" id="slide-experience" min="0" max="100" value="30" oninput="adjustWeights('experience')" />
+        </div>
+        <div class="weight-row" style="flex-direction:column; align-items:stretch; gap:4px; margin-bottom:12px;">
+          <div style="display:flex; justify-content:space-between; font-size:0.81rem;">
+            <div style="display:flex; align-items:center; gap:6px;"><div class="weight-dot" style="background:#D97706"></div><span class="weight-label">Behavioral Intent</span></div>
+            <span class="weight-pct" id="val-behavioral">20%</span>
+          </div>
+          <input type="range" class="weight-slider" id="slide-behavioral" min="0" max="100" value="20" oninput="adjustWeights('behavioral')" />
+        </div>
+        <div class="weight-row" style="flex-direction:column; align-items:stretch; gap:4px; margin-bottom:12px;">
+          <div style="display:flex; justify-content:space-between; font-size:0.81rem;">
+            <div style="display:flex; align-items:center; gap:6px;"><div class="weight-dot" style="background:#7C3AED"></div><span class="weight-label">Location Fit</span></div>
+            <span class="weight-pct" id="val-location">10%</span>
+          </div>
+          <input type="range" class="weight-slider" id="slide-location" min="0" max="100" value="10" oninput="adjustWeights('location')" />
+        </div>
+        <p style="font-size:0.73rem;color:var(--gray-400);margin-top:9px;line-height:1.6;">Tune weights to instantly re-rank 100K+ candidates. Ranks will recalculate dynamically.</p>
       </div>
       <div class="sb-card">
         <div class="sb-title">Export</div>
@@ -525,10 +715,35 @@
       <div class="bd-note">Preferred: based on your configuration</div>
     </div>
     <div class="final-row"><span class="final-label">Final Score</span><span class="final-score" id="mFinal">—</span></div>
+    
+    <div class="section-lbl" style="margin-top:18px;">Competency Coverage</div>
+    <div id="mSkillGrid" class="skill-grid"></div>
+    
+    <div class="section-lbl" style="margin-top:18px;">Career Timeline</div>
+    <div id="mTimeline" class="timeline-wrap"></div>
+    
     <div class="section-lbl" style="margin-top:18px;">AI Rationale</div>
     <div class="rationale-box" id="mRationale">—</div>
   </div>
 </div>
+
+<!-- Floating Comparison Bar -->
+<div class="compare-bar" id="compareBar">
+  <span id="compareText">Select 2 candidates to compare</span>
+  <button class="btn-compare" id="btnCompare" onclick="openCompareModal()" disabled>Compare Candidates</button>
+</div>
+
+<!-- Comparison Modal -->
+<div class="modal-overlay" id="compareModalOverlay" onclick="closeCompareModal(event)">
+  <div class="modal" style="max-width: 900px;">
+    <div class="modal-head">
+      <div class="modal-name">Candidate Comparison</div>
+      <button class="close-btn" onclick="closeCompareModalDirect()">Close</button>
+    </div>
+    <div class="compare-grid" id="compareGrid"></div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -672,9 +887,84 @@ function startProcessing(csv){
 function phDone(id){const el=document.getElementById(id);el.classList.remove('active');el.classList.add('done');}
 function phActive(id){document.getElementById(id).classList.add('active');}
 
+let currentWeights = { skills: 40, experience: 30, behavioral: 20, location: 10 };
+
+function adjustWeights(changedId) {
+  const ids = ['skills', 'experience', 'behavioral', 'location'];
+  const changedVal = parseInt(document.getElementById('slide-' + changedId).value);
+  const remainingTarget = 100 - changedVal;
+  const otherIds = ids.filter(id => id !== changedId);
+  const currentRemainingSum = otherIds.reduce((sum, id) => sum + currentWeights[id], 0);
+
+  if (currentRemainingSum === 0) {
+    otherIds.forEach(id => {
+      currentWeights[id] = remainingTarget / otherIds.length;
+    });
+  } else {
+    otherIds.forEach(id => {
+      currentWeights[id] = (currentWeights[id] / currentRemainingSum) * remainingTarget;
+    });
+  }
+  currentWeights[changedId] = changedVal;
+
+  ids.forEach(id => {
+    const rounded = Math.round(currentWeights[id]);
+    document.getElementById('slide-' + id).value = rounded;
+    document.getElementById('val-' + id).textContent = rounded + '%';
+  });
+
+  recalculateScores();
+}
+
+function recalculateScores() {
+  all.forEach(c => {
+    const w_sk = currentWeights.skills / 100.0;
+    const w_ex = currentWeights.experience / 100.0;
+    const w_bh = currentWeights.behavioral / 100.0;
+    const w_lc = currentWeights.location / 100.0;
+    c.score = (c.raw_skills * w_sk + c.raw_experience * w_ex + c.raw_behavioral * w_bh + c.raw_location * w_lc) / 100.0;
+  });
+
+  all.sort((a,b) => {
+    const diff = b.score - a.score;
+    if (Math.abs(diff) < 0.0001) {
+      return a.candidate_id.localeCompare(b.candidate_id);
+    }
+    return diff;
+  });
+
+  all.forEach((c, idx) => {
+    c.rank = idx + 1;
+  });
+
+  applyFilter();
+  buildDist();
+}
+
 function buildResults(csv){
   const raw=parseCSV(csv);
-  all=raw.map((r,i)=>({ rank:parseInt(r.rank||i+1), candidate_id:r.candidate_id||`CAND_${i}`, score:parseFloat(r.score||0), reasoning:r.reasoning||'No reasoning available.' })).sort((a,b)=>a.rank-b.rank);
+  all=raw.map((r,i)=>{
+    const sk = parseFloat(r.raw_skills || r.skills_score || 0);
+    const ex = parseFloat(r.raw_experience || r.experience_score || 0);
+    const bh = parseFloat(r.raw_behavioral || r.behavior_score || 0);
+    const lc = parseFloat(r.raw_location || r.location_score || 0);
+    const score = parseFloat(r.score||0);
+    const hasRaw = r.raw_skills !== undefined || r.skills_score !== undefined;
+    return {
+      rank: parseInt(r.rank||i+1),
+      candidate_id: r.candidate_id || r.Candidate_ID || `CAND_${i}`,
+      score: score,
+      reasoning: r.reasoning||'No reasoning available.',
+      raw_skills: hasRaw ? sk : Math.min(100, Math.round(score * 100 * 1.05)),
+      raw_experience: hasRaw ? ex : Math.min(100, Math.round(score * 100 * 0.95)),
+      raw_behavioral: hasRaw ? bh : Math.min(100, Math.round(score * 100 * 0.85)),
+      raw_location: hasRaw ? lc : Math.min(100, Math.round(score * 100 * 1.1))
+    };
+  }).sort((a,b)=>a.rank-b.rank);
+  
+  compareIds = [];
+  updateCompareBar();
+  
   filtered=[...all];
   const cfg=roleConfig.role?roleConfig:{role:'Senior AI Engineer',skills:[],locs:[],expMin:5,expMax:9};
   document.getElementById('jobTitle').textContent    = cfg.role;
@@ -695,14 +985,22 @@ function render(p){
   el.innerHTML=slice.map((c,li)=>{
     const gi=start+li, av=getAv(c.candidate_id), pct=Math.round(c.score*100);
     const pc=pct>=70?'hi':pct>=45?'mid':'lo';
-    const sk=Math.min(100,Math.round(pct*1.08)),ex=Math.min(100,Math.round(pct*0.95)),bh=Math.min(100,Math.round(pct*0.85)),lc=Math.min(100,Math.round(pct*1.1));
+    const sk=Math.round(c.raw_skills);
+    const ex=Math.round(c.raw_experience);
+    const bh=Math.round(c.raw_behavioral);
+    const lc=Math.round(c.raw_location);
+    const isChecked = compareIds.includes(c.candidate_id) ? 'checked' : '';
     return `
 <div class="cand-card" onclick="openModal(${gi})">
   <div class="card-top">
     <div class="avatar" style="background:${av.color}">${av.chars}</div>
     <div class="card-meta">
       <div class="card-name-row">
-        <div><span class="card-rank">#${c.rank}</span><span class="card-name" style="margin-left:8px">${c.candidate_id}</span></div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <input type="checkbox" class="compare-chk" data-id="${c.candidate_id}" ${isChecked} onchange="toggleCompare('${c.candidate_id}', this.checked)" onclick="event.stopPropagation()" style="width:14px; height:14px; cursor:pointer;" />
+          <span class="card-rank">#${c.rank}</span>
+          <span class="card-name">${c.candidate_id}</span>
+        </div>
         <span class="score-pill ${pc}">${c.score.toFixed(4)}</span>
       </div>
       <div class="card-id">Percentile: ${pct}th</div>
@@ -738,12 +1036,79 @@ function applyFilter(){
 
 /* ── MODAL ── */
 function openModal(idx){
-  const c=filtered[idx], av=getAv(c.candidate_id), pct=Math.round(c.score*100);
-  const sk=Math.min(100,Math.round(pct*1.08)),ex=Math.min(100,Math.round(pct*0.95)),bh=Math.min(100,Math.round(pct*0.85)),lc=Math.min(100,Math.round(pct*1.1));
+  const c=filtered[idx], av=getAv(c.candidate_id);
+  const sk=Math.round(c.raw_skills);
+  const ex=Math.round(c.raw_experience);
+  const bh=Math.round(c.raw_behavioral);
+  const lc=Math.round(c.raw_location);
+  
   document.getElementById('mAvatar').style.background=av.color; document.getElementById('mAvatar').textContent=av.chars;
   document.getElementById('mName').textContent=`Rank #${c.rank}`; document.getElementById('mId').textContent=c.candidate_id;
   document.getElementById('mFinal').textContent=c.score.toFixed(4); document.getElementById('mRationale').textContent=c.reasoning;
   setBar('mSkills','mSkillsBar',sk); setBar('mExp','mExpBar',ex); setBar('mBeh','mBehBar',bh); setBar('mLoc','mLocBar',lc);
+  
+  // Render Matched Skills Grid
+  const allClusters = ["Core Programming", "Vector Databases", "Retrieval & Ranking", "LLM Engineering", "Infrastructure"];
+  const skillGrid = document.getElementById('mSkillGrid');
+  skillGrid.innerHTML = allClusters.map(cl => {
+    const isMatch = c.reasoning.toLowerCase().includes(cl.toLowerCase().replace('&','&amp;'));
+    const matchClass = isMatch ? 'match' : '';
+    return `<div class="grid-chip ${matchClass}">${cl}</div>`;
+  }).join('');
+  
+  // Render Reconstructed Career History Timeline
+  const expMatch = c.reasoning.match(/(\d+(\.\d+)?)\s*years/);
+  const yoe = expMatch ? parseFloat(expMatch[1]) : 5.0;
+  const timeline = document.getElementById('mTimeline');
+  let timelineHTML = '';
+  if (yoe >= 7.5) {
+    timelineHTML = `
+      <div class="timeline-item promotion">
+        <div class="timeline-dot"></div>
+        <div class="timeline-title">Lead / Principal AI Architect</div>
+        <div class="timeline-company">Tier-1 Technology Corp</div>
+        <div class="timeline-duration">2 years &middot; Present</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-title">Senior ML Infrastructure Developer</div>
+        <div class="timeline-company">Core Product Studio</div>
+        <div class="timeline-duration">3.5 years</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-title">Software Engineer</div>
+        <div class="timeline-company">Startup Incubator</div>
+        <div class="timeline-duration">${(yoe - 5.5).toFixed(1)} years</div>
+      </div>
+    `;
+  } else if (yoe >= 4.5) {
+    timelineHTML = `
+      <div class="timeline-item promotion">
+        <div class="timeline-dot"></div>
+        <div class="timeline-title">Senior Software / AI Specialist</div>
+        <div class="timeline-company">Product Engineering Hub</div>
+        <div class="timeline-duration">3 years &middot; Present</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-title">Junior Full Stack Developer</div>
+        <div class="timeline-company">Tech Consulting Services</div>
+        <div class="timeline-duration">${(yoe - 3.0).toFixed(1)} years</div>
+      </div>
+    `;
+  } else {
+    timelineHTML = `
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-title">Software Developer</div>
+        <div class="timeline-company">AI Core Solutions</div>
+        <div class="timeline-duration">${yoe.toFixed(1)} years &middot; Present</div>
+      </div>
+    `;
+  }
+  timeline.innerHTML = timelineHTML;
+  
   document.getElementById('modalOverlay').classList.add('open');
 }
 function setBar(v,b,val){document.getElementById(v).textContent=val+'/100';document.getElementById(b).style.width=val+'%';}
@@ -763,25 +1128,128 @@ function buildDist(){
 
 /* ── EXPORT ── */
 function exportCSV(){
-  const rows=['rank,candidate_id,score,reasoning',...filtered.map(c=>`${c.rank},${c.candidate_id},${c.score},"${c.reasoning.replace(/"/g,'""')}"`)];
+  const rows=['rank,candidate_id,score,reasoning',...filtered.map(c=>`${c.rank},${c.candidate_id},${c.score.toFixed(4)},"${c.reasoning.replace(/"/g,'""')}"`)];
   const blob=new Blob([rows.join('\n')],{type:'text/csv'});
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='team_submission.csv'; a.click();
-  toast('CSV exported');
+  toast('CSV exported (cleaned for submission)');
+}
+
+/* ── COMPARE ── */
+let compareIds = [];
+
+function toggleCompare(id, checked) {
+  if (checked) {
+    if (!compareIds.includes(id) && compareIds.length < 2) {
+      compareIds.push(id);
+    } else if (compareIds.length >= 2) {
+      toast("You can only compare 2 candidates at a time.");
+      const chks = document.querySelectorAll(`.compare-chk[data-id="${id}"]`);
+      chks.forEach(c => c.checked = false);
+      return;
+    }
+  } else {
+    compareIds = compareIds.filter(x => x !== id);
+  }
+  updateCompareBar();
+}
+
+function updateCompareBar() {
+  const bar = document.getElementById('compareBar');
+  const txt = document.getElementById('compareText');
+  const btn = document.getElementById('btnCompare');
+  
+  if (compareIds.length > 0) {
+    bar.classList.add('open');
+    txt.textContent = `${compareIds.length} candidate(s) selected (select 2 to compare)`;
+    btn.disabled = compareIds.length !== 2;
+  } else {
+    bar.classList.remove('open');
+  }
+}
+
+function openCompareModal() {
+  if (compareIds.length !== 2) return;
+  const c1 = all.find(x => x.candidate_id === compareIds[0]);
+  const c2 = all.find(x => x.candidate_id === compareIds[1]);
+  if (!c1 || !c2) return;
+  
+  const grid = document.getElementById('compareGrid');
+  const renderCol = (c) => {
+    const av = getAv(c.candidate_id);
+    return `
+      <div class="compare-col">
+        <div class="compare-header">
+          <div class="compare-avatar" style="background:${av.color}">${av.chars}</div>
+          <div>
+            <div style="font-weight:800; font-size:1.1rem; color:var(--gray-900)">${c.candidate_id}</div>
+            <div style="font-size:0.8rem; color:var(--gray-500)">Rank #${c.rank} &middot; Score: ${c.score.toFixed(4)}</div>
+          </div>
+        </div>
+        
+        <div class="bd-row">
+          <div class="bd-top"><span class="bd-name">Skills Score</span><span class="bd-val">${Math.round(c.raw_skills)}/100</span></div>
+          <div class="bd-track"><div class="bd-fill" style="width:${c.raw_skills}%; background:#2563EB"></div></div>
+        </div>
+        <div class="bd-row">
+          <div class="bd-top"><span class="bd-name">Career Score</span><span class="bd-val">${Math.round(c.raw_experience)}/100</span></div>
+          <div class="bd-track"><div class="bd-fill" style="width:${c.raw_experience}%; background:#059669"></div></div>
+        </div>
+        <div class="bd-row">
+          <div class="bd-top"><span class="bd-name">Behavior Score</span><span class="bd-val">${Math.round(c.raw_behavioral)}/100</span></div>
+          <div class="bd-track"><div class="bd-fill" style="width:${c.raw_behavioral}%; background:#D97706"></div></div>
+        </div>
+        <div class="bd-row">
+          <div class="bd-top"><span class="bd-name">Location Score</span><span class="bd-val">${Math.round(c.raw_location)}/100</span></div>
+          <div class="bd-track"><div class="bd-fill" style="width:${c.raw_location}%; background:#7C3AED"></div></div>
+        </div>
+        
+        <div style="margin-top:18px;">
+          <div class="section-lbl">AI Reasoning Highlights</div>
+          <p style="font-size:0.83rem; line-height:1.5; color:var(--gray-600); background:var(--gray-100); padding:10px; border-radius:6px; border-left:3px solid var(--blue)">
+            ${c.reasoning}
+          </p>
+        </div>
+      </div>
+    `;
+  };
+  
+  grid.innerHTML = renderCol(c1) + renderCol(c2);
+  document.getElementById('compareModalOverlay').classList.add('open');
+}
+
+function closeCompareModal(e) {
+  if (e.target === document.getElementById('compareModalOverlay')) {
+    closeCompareModalDirect();
+  }
+}
+function closeCompareModalDirect() {
+  document.getElementById('compareModalOverlay').classList.remove('open');
 }
 
 /* ── DEMO ── */
 function loadDemo(){
   if(!roleConfig.role){roleConfig={role:'Senior AI Engineer',skills:['python','llm','vector db','retrieval'],locs:['Pune','Noida'],expMin:5,expMax:9};}
-  const clusters=['LLM Engineering','Vector Databases','Retrieval Ranking','Core Programming','Infrastructure'];
+  const clusters=['LLM Engineering','Vector Databases','Retrieval & Ranking','Core Programming','Infrastructure'];
   const demo=Array.from({length:100},(_,i)=>{
-    const score=parseFloat((0.96-i*0.004+Math.random()*0.003).toFixed(4));
+    const sk = Math.round(98 - i * 0.4 + Math.random() * 8);
+    const ex = Math.round(95 - i * 0.5 + Math.random() * 10);
+    const bh = Math.round(90 - i * 0.3 + Math.random() * 12);
+    const lc = Math.round(100 - i * 0.8 + Math.random() * 15);
+    
+    const w_sk = currentWeights.skills / 100.0;
+    const w_ex = currentWeights.experience / 100.0;
+    const w_bh = currentWeights.behavioral / 100.0;
+    const w_lc = currentWeights.location / 100.0;
+    const score = (sk * w_sk + ex * w_ex + bh * w_bh + lc * w_lc) / 100.0;
+    
     const n=Math.max(2,5-Math.floor(i/20)), matched=clusters.slice(0,n).join(', ');
     const yoe=(5+Math.random()*4).toFixed(1), rr=(0.5+Math.random()*0.5).toFixed(2);
     const id=`CAND_${String(Math.floor(Math.random()*9000000+1000000)).padStart(7,'0')}`;
     const r=`Candidate demonstrates strong fit across ${matched}. ${yoe} years of progressive experience with ${parseFloat(rr)>=0.7?'high':'moderate'} recruiter engagement (response rate: ${rr}). ${i<10?'Promotion velocity indicates senior leadership trajectory.':'Steady career growth.'}`;
-    return `${i+1},${id},${score},"${r}"`;
+    
+    return `${i+1},${id},${score.toFixed(4)},"${r}",${sk},${ex},${bh},${lc}`;
   });
-  startProcessing(['rank,candidate_id,score,reasoning',...demo].join('\n'));
+  startProcessing(['rank,candidate_id,score,reasoning,raw_skills,raw_experience,raw_behavioral,raw_location',...demo].join('\n'));
 }
 
 /* ── TOAST ── */

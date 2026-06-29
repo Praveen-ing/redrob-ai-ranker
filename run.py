@@ -186,7 +186,11 @@ def process_candidates(candidates_path, limit=100, custom_weights=None):
             'candidate_id': item['candidate_id'],
             'rank': rank,
             'score': round(item['score'], 4),
-            'reasoning': reasoning
+            'reasoning': reasoning,
+            'raw_skills': item['sub_scores'].get('raw_skills', 0.0),
+            'raw_experience': item['sub_scores'].get('raw_experience', 0.0),
+            'raw_behavioral': item['sub_scores'].get('raw_behavioral', 0.0),
+            'raw_location': item['sub_scores'].get('raw_location', 0.0)
         })
         
     return results
@@ -194,7 +198,8 @@ def process_candidates(candidates_path, limit=100, custom_weights=None):
 def write_submission(results, out_path):
     print(f"Writing output to {out_path}...")
     with open(out_path, 'w', newline='', encoding='utf-8') as f:
-        writer = csv.DictWriter(f, fieldnames=['candidate_id', 'rank', 'score', 'reasoning'])
+        fieldnames = ['candidate_id', 'rank', 'score', 'reasoning', 'raw_skills', 'raw_experience', 'raw_behavioral', 'raw_location']
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerows(results)
     print("Done!")

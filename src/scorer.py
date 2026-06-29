@@ -136,9 +136,41 @@ def score_skills_semantic(candidate, custom_weights=None, global_stats=None):
     final_skills_score = (raw_score / 100.0) * weights['skills'] * cohesion_factor
     return final_skills_score, matched_clusters
 
+def needleman_wunsch_alignment(seqA, seqB):
+    """
+    Computes similarity alignment score between two career level sequences using dynamic programming.
+    """
+    if not seqA or not seqB:
+        return 0.0
+    n, m = len(seqA), len(seqB)
+    dp = [[0.0] * (m + 1) for _ in range(n + 1)]
+    gap_penalty = -0.5
+    for i in range(1, n + 1):
+        dp[i][0] = dp[i-1][0] + gap_penalty
+    for j in range(1, m + 1):
+        dp[0][j] = dp[0][j-1] + gap_penalty
+        
+    for i in range(1, n + 1):
+        for j in range(1, m + 1):
+            valA = seqA[i-1]
+            valB = seqB[j-1]
+            # Similarity score: max +1.0 for match, decreases with distance
+            match_score = 1.0 - abs(valA - valB) * 0.4
+            
+            match = dp[i-1][j-1] + match_score
+            delete = dp[i-1][j] + gap_penalty
+            insert = dp[i][j-1] + gap_penalty
+            dp[i][j] = max(match, delete, insert)
+            
+    max_possible = float(len(seqB))
+    raw_aligned = dp[n][m]
+    norm_score = (raw_aligned + (n + m) * 0.5) / (max_possible + (n + m) * 0.5)
+    return max(0.0, min(1.0, norm_score))
+
+
 def score_career_trajectory(candidate, custom_weights=None, global_stats=None):
     """
-    Analyzes promotion velocity and company pedigree via PageRank.
+    Analyzes promotion velocity, company pedigree via PageRank, and career sequence alignment.
     """
     weights = custom_weights if custom_weights else WEIGHTS
     profile = candidate.get('profile', {})
@@ -216,6 +248,14 @@ def score_career_trajectory(candidate, custom_weights=None, global_stats=None):
     if highest_level >= 3 and yoe <= 5 and yoe > 0:
         trajectory_score += 10
         
+    # Career Sequence Alignment (Dynamic Time Warping / Sequence Alignment)
+    align_score = 0.0
+    if levels:
+        ideal_path = [1, 2, 3, 4, 5] if ideal_max > 5 else [1, 2, 3, 4]
+        chrono_levels = levels[::-1]
+        align_score = needleman_wunsch_alignment(chrono_levels, ideal_path)
+        trajectory_score += int(align_score * 10)
+        
     if len(levels) >= 2:
         lvl_start = levels[-1]
         lvl_end = levels[0]
@@ -236,7 +276,8 @@ def score_career_trajectory(candidate, custom_weights=None, global_stats=None):
     velocity_metrics = {
         'highest_level': highest_level,
         'has_tier_1': has_tier_1,
-        'all_consulting': all_consulting
+        'all_consulting': all_consulting,
+        'alignment_score': align_score
     }
             
     return (raw_score / 100.0) * weights['experience'], velocity_metrics
@@ -328,6 +369,8 @@ def score_candidate(candidate, custom_weights=None, global_stats=None):
     """
     Returns (total_score, sub_scores, is_honeypot_flag)
     """
+    weights = custom_weights if custom_weights else WEIGHTS
+    
     if is_honeypot(candidate, global_stats=global_stats):
         return 0, {}, True
         
@@ -339,11 +382,21 @@ def score_candidate(candidate, custom_weights=None, global_stats=None):
     total = s_skills + s_exp + s_beh + s_loc
     total_normalized = total / 100.0
     
+    # Calculate raw scores out of 100 for client sliders
+    raw_skills = (s_skills / weights['skills'] * 100.0) if weights['skills'] > 0 else 0.0
+    raw_experience = (s_exp / weights['experience'] * 100.0) if weights['experience'] > 0 else 0.0
+    raw_behavioral = (s_beh / weights['behavioral'] * 100.0) if weights['behavioral'] > 0 else 0.0
+    raw_location = (s_loc / weights['location'] * 100.0) if weights['location'] > 0 else 0.0
+    
     sub_scores = {
         'skills': s_skills,
         'experience': s_exp,
         'behavioral': s_beh,
         'location': s_loc,
+        'raw_skills': round(raw_skills, 2),
+        'raw_experience': round(raw_experience, 2),
+        'raw_behavioral': round(raw_behavioral, 2),
+        'raw_location': round(raw_location, 2),
         'matched_clusters': matched_clusters,
         'velocity': velocity,
         'beh_status': beh_status
