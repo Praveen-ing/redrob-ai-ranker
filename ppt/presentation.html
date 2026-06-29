@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Team TOPGUN — Redrob AI Ranker | INDIA.RUNS Hackathon</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --slide-w: 960px;
+      --slide-h: 540px;
+      --black: #0a0a0a;
+      --dark: #111111;
+      --dark-2: #1a1a1a;
+      --white: #ffffff;
+      --gray-100: #f5f5f5;
+      --gray-200: #e5e5e5;
+      --gray-400: #a3a3a3;
+      --gray-500: #737373;
+      --gray-600: #525252;
+      --gray-700: #404040;
+      --purple: #8b5cf6;
+      --purple-light: #a78bfa;
+      --blue: #3b82f6;
+      --blue-accent: #4f7cff;
+      --gradient-bar: linear-gradient(90deg, #6366f1, #8b5cf6, #a855f7);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #1a1a2e;
+      color: var(--white);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+      gap: 32px;
+      min-height: 100vh;
+    }
+
+    /* Navigation */
+    .nav-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      background: rgba(10,10,10,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 32px;
+    }
+    .nav-title {
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: var(--gray-400);
+      letter-spacing: 0.5px;
+    }
+    .nav-controls {
+      display: flex;
+      gap: 8px;
+    }
+    .nav-btn {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: var(--white);
+      border-radius: 6px;
+      padding: 6px 14px;
+      font-size: 0.78rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .nav-btn:hover { background: rgba(255,255,255,0.15); }
+    .slide-counter {
+      font-size: 0.78rem;
+      color: var(--gray-500);
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+    }
+
+    /* Slide Container */
+    .slide {
+      width: var(--slide-w);
+      min-height: var(--slide-h);
+      background: var(--white);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.05);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      position: relative;
+    }
+
+    /* ─── HEADER BAR (dark top strip for inner slides) ─── */
+    .slide-header {
+      background: var(--black);
+      padding: 12px 36px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 44px;
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .header-logo {
+      font-weight: 800;
+      font-size: 0.82rem;
+      color: var(--white);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .header-logo .dot {
+      width: 8px; height: 8px;
+      background: #ef4444;
+      border-radius: 50%;
+    }
+    .header-sep {
+      color: var(--gray-600);
+      font-size: 0.9rem;
+    }
+    .header-h2s {
+      font-weight: 800;
+      font-size: 0.82rem;
+      color: var(--white);
+      letter-spacing: 0.5px;
+    }
+    .header-india-runs {
+      font-style: italic;
+      font-weight: 900;
+      font-size: 1rem;
+      background: linear-gradient(135deg, #a78bfa, #c084fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: 0.5px;
+    }
+
+    /* ─── SLIDE BODY ─── */
+    .slide-body {
+      flex: 1;
+      padding: 32px 44px;
+      display: flex;
+      flex-direction: column;
+      color: var(--black);
+    }
+
+    /* ─── BOTTOM ACCENT BAR ─── */
+    .accent-bar {
+      height: 4px;
+      background: var(--gradient-bar);
+      flex-shrink: 0;
+    }
+
+    /* ─── TYPOGRAPHY ─── */
+    .slide-title {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: var(--black);
+      margin-bottom: 20px;
+      letter-spacing: -0.3px;
+    }
+    .slide-subtitle {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--gray-500);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+    }
+
+    .bullet-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      padding: 0;
+    }
+    .bullet-list li {
+      position: relative;
+      padding-left: 22px;
+      font-size: 0.88rem;
+      line-height: 1.55;
+      color: #1e1e1e;
+    }
+    .bullet-list li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 7px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--purple);
+    }
+    .bullet-list li strong {
+      color: var(--black);
+    }
+
+    /* ─── TITLE SLIDE (Slide 1) ─── */
+    .title-slide .title-hero {
+      background: linear-gradient(135deg, #1a0533 0%, #0f0a1e 20%, #1a0a2e 40%, #2d1b4e 60%, #4a1942 75%, #c2532e 90%, #e87a3a 100%);
+      padding: 48px 44px 36px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .title-hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at 20% 50%, rgba(139,92,246,0.3), transparent 60%),
+        radial-gradient(ellipse at 80% 40%, rgba(234,88,12,0.25), transparent 60%),
+        radial-gradient(ellipse at 50% 100%, rgba(59,130,246,0.15), transparent 50%);
+    }
+    .title-logos {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+      z-index: 1;
+    }
+    .title-logo-text {
+      font-weight: 800;
+      font-size: 1.1rem;
+      color: var(--white);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .title-logo-text .dot {
+      width: 10px; height: 10px;
+      background: #ef4444;
+      border-radius: 50%;
+    }
+    .title-logo-sep {
+      color: rgba(255,255,255,0.3);
+      font-size: 1.2rem;
+    }
+    .title-india-runs {
+      font-size: 3rem;
+      font-weight: 900;
+      font-style: italic;
+      background: linear-gradient(180deg, #ffffff, #e2d6ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: 1px;
+      z-index: 1;
+      margin-bottom: 14px;
+    }
+    .title-tagline {
+      display: inline-block;
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 24px;
+      padding: 8px 24px;
+      font-size: 0.88rem;
+      font-weight: 400;
+      color: rgba(255,255,255,0.85);
+      z-index: 1;
+      backdrop-filter: blur(4px);
+      background: rgba(255,255,255,0.05);
+    }
+    .title-info {
+      padding: 28px 44px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background: var(--white);
+    }
+    .title-info-row {
+      font-size: 0.92rem;
+      color: #1e1e1e;
+      line-height: 1.6;
+    }
+    .title-info-row strong {
+      font-weight: 700;
+      color: var(--black);
+    }
+
+    /* ─── TABLE STYLES ─── */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+    }
+    .data-table th {
+      text-align: left;
+      padding: 10px 14px;
+      background: #f8f7ff;
+      font-weight: 700;
+      color: var(--black);
+      border-bottom: 2px solid var(--purple);
+      font-size: 0.8rem;
+      letter-spacing: 0.3px;
+    }
+    .data-table td {
+      padding: 9px 14px;
+      border-bottom: 1px solid #f0f0f0;
+      color: #333;
+      line-height: 1.45;
+    }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover td { background: #fafafa; }
+
+    /* ─── METRIC CARDS ─── */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+    .metric-card {
+      background: #f9f8ff;
+      border: 1px solid #ede9fe;
+      border-radius: 10px;
+      padding: 16px 18px;
+      text-align: center;
+    }
+    .metric-value {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--purple);
+      letter-spacing: -0.5px;
+    }
+    .metric-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--gray-500);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 4px;
+    }
+
+    /* ─── FLOW DIAGRAM ─── */
+    .flow-row {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .flow-box {
+      background: linear-gradient(135deg, #f9f8ff, #ede9fe);
+      border: 1px solid #ddd6fe;
+      border-radius: 10px;
+      padding: 12px 16px;
+      text-align: center;
+      min-width: 120px;
+    }
+    .flow-box-dark {
+      background: linear-gradient(135deg, #1e1b4b, #312e81);
+      border: 1px solid #4338ca;
+      color: var(--white);
+    }
+    .flow-box-dark .flow-label { color: rgba(255,255,255,0.7); }
+    .flow-box-dark .flow-text { color: var(--white); }
+    .flow-label {
+      font-size: 0.6rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--purple);
+      margin-bottom: 3px;
+    }
+    .flow-text {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--black);
+    }
+    .flow-arrow {
+      font-size: 1.1rem;
+      color: var(--purple);
+      padding: 0 6px;
+      flex-shrink: 0;
+    }
+
+    /* ─── CODE BLOCK ─── */
+    .code-block {
+      background: #1e1e2e;
+      border-radius: 8px;
+      padding: 14px 18px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      color: #cdd6f4;
+      line-height: 1.7;
+      overflow-x: auto;
+    }
+    .code-block .comment { color: #6c7086; }
+    .code-block .keyword { color: #cba6f7; }
+    .code-block .string { color: #a6e3a1; }
+    .code-block .number { color: #fab387; }
+    .code-block .func { color: #89b4fa; }
+
+    /* ─── TAG CHIPS ─── */
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .tag {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      font-weight: 600;
+    }
+    .tag-purple { background: #ede9fe; color: #6d28d9; }
+    .tag-blue { background: #dbeafe; color: #1d4ed8; }
+    .tag-green { background: #dcfce7; color: #15803d; }
+    .tag-amber { background: #fef3c7; color: #b45309; }
+    .tag-red { background: #fee2e2; color: #b91c1c; }
+    .tag-gray { background: #f3f4f6; color: #374151; }
+
+    /* ─── PILLAR CARDS ─── */
+    .pillars-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .pillar-card {
+      border-radius: 10px;
+      padding: 16px 18px;
+      border: 1px solid;
+    }
+    .pillar-card h4 {
+      font-size: 0.82rem;
+      font-weight: 800;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .pillar-card p {
+      font-size: 0.73rem;
+      line-height: 1.5;
+      color: #555;
+    }
+    .pillar-card.p1 { background: #f5f3ff; border-color: #ddd6fe; }
+    .pillar-card.p1 h4 { color: #6d28d9; }
+    .pillar-card.p2 { background: #eff6ff; border-color: #bfdbfe; }
+    .pillar-card.p2 h4 { color: #1d4ed8; }
+    .pillar-card.p3 { background: #ecfdf5; border-color: #a7f3d0; }
+    .pillar-card.p3 h4 { color: #047857; }
+    .pillar-card.p4 { background: #fff7ed; border-color: #fed7aa; }
+    .pillar-card.p4 h4 { color: #c2410c; }
+
+    /* ─── ARCHITECTURE BOXES ─── */
+    .arch-layer {
+      background: #f9f8ff;
+      border: 1px solid #ede9fe;
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin-bottom: 10px;
+    }
+    .arch-layer-title {
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: var(--purple);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .arch-layer p, .arch-layer li {
+      font-size: 0.76rem;
+      color: #444;
+      line-height: 1.5;
+    }
+    .arch-layer ul { padding-left: 16px; }
+    .arch-layer ul li { margin-bottom: 3px; }
+
+    /* ─── 2-COL LAYOUT ─── */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    /* ─── SUBMISSION ASSET LIST ─── */
+    .asset-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .asset-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 10px 14px;
+      background: #f9f8ff;
+      border: 1px solid #ede9fe;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      color: #333;
+      line-height: 1.45;
+    }
+    .asset-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      flex-shrink: 0;
+      background: var(--purple);
+      color: var(--white);
+      font-weight: 700;
+    }
+    .asset-list li strong { color: var(--black); }
+
+    /* Print / fullscreen helper */
+    @media print {
+      body { background: white; padding: 0; gap: 0; }
+      .nav-bar { display: none; }
+      .slide { break-after: page; box-shadow: none; border-radius: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════════════
+     SLIDE 1 — TITLE SLIDE
+     ════════════════════════════════════════════════════════════════ -->
+<div class="slide title-slide">
+  <div class="title-hero">
+    <div class="title-logos">
+      <span class="title-logo-text"><span class="dot"></span> redrob</span>
+      <span class="title-logo-sep">│</span>
+      <span class="title-logo-text" style="letter-spacing:1.5px;">H2S</span>
+    </div>
+    <div class="title-india-runs">INDIA.RUNS</div>
+    <span class="title-tagline">Build what next India runs on</span>
+  </div>
+  <div class="title-info">
+    <div class="title-info-row"><strong>Team Name :</strong> TOPGUN</div>
+    <div class="title-info-row"><strong>Team Leader Name :</strong> Nethavath Praveen</div>
+    <div class="title-info-row"><strong>Problem Statement :</strong> Build an intelligent candidate discovery & ranking system that goes beyond keyword matching to evaluate 100,000+ profiles using semantic understanding, career trajectory analysis, and behavioral intent scoring — fully offline, in under 5 minutes.</div>
+  </div>
+  <div class="accent-bar"></div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════
+     SLIDE 2 — SOLUTION OVERVIEW
+     ════════════════════════════════════════════════════════════════ -->
+<div class="slide">
+  <div class="slide-header">
+    <div class="header-left">
+      <span class="header-logo"><span class="dot"></span> redrob</span>
+      <span class="header-sep">│</span>
+      <span class="header-h2s">H2S</span>
+    </div>
+    <span class="header-india-runs">INDIA.RUNS</span>
+  </div>
+  <div class="slide-body">
+    <div class="slide-title">Solution Overview</div>
+    <ul class="bullet-list">
+      <li><strong>Redrob AI Ranker</strong> — A production-grade, fully offline AI candidate ranking engine that processes 100,000+ profiles in ~34 seconds with zero API calls, zero internet dependency, and fully transparent scoring.</li>
+      <li><strong>Semantic Understanding:</strong> Instead of counting keywords, skills are grouped into 5 semantic clusters (Core Programming, Vector DBs, Retrieval & Ranking, LLM Engineering, Infrastructure). Candidates get credit for the <em>entire cluster</em> they demonstrate competency in.</li>
+      <li><strong>What differentiates us:</strong> We use TF-IDF weighted cluster matching, Needleman-Wunsch career alignment (from bioinformatics), PageRank-based corporate pedigree scoring, Shannon entropy anomaly detection, and a recruiter active learning loop — all running fully offline with Python's standard library.</li>
+      <li><strong>Every ranking decision is explainable</strong> — deterministic, data-driven XAI rationales are generated for each shortlisted candidate, not generic templates.</li>
+    </ul>
+  </div>
+  <div class="accent-bar"></div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════
+     SLIDE 3 — JD UNDERSTANDING & CANDIDATE EVALUATION
+     ════════════════════════════════════════════════════════════════ -->
+<div class="slide">
+  <div class="slide-header">
+    <div class="header-left">
+      <span class="header-logo"><span class="dot"></span> redrob</span>
+      <span class="header-sep">│</span>
+      <span class="header-h2s">H2S</span>
+    </div>
+    <span class="header-india-runs">INDIA.RUNS</span>
+  </div>
+  <div class="slide-body">
+    <div class="slide-title">JD Understanding & Candidate Evaluation</div>
+    <ul class="bullet-list">
+      <li><strong>Key requirements extracted from the JD</strong> are codified in a single JSON config (<code>jd_rules.json</code>): target role (Senior AI Engineer), ideal experience band (5–9 yrs), 5 semantic skill clusters with 50+ accepted technologies, preferred/acceptable locations, and company tier classifications.</li>
+      <li><strong>Beyond keyword matching:</strong> We evaluate candidate fit using IDF-weighted semantic cluster coverage, skill endorsement bonuses (up to 15%), platform assessment score integration, profile summary & headline text mining, and a cohesion check that discounts advanced skills without foundational programming.</li>
+      <li><strong>Full signal utilization:</strong> Every field in the candidate schema is used — education tier, skill assessment scores, recruiter response rate, notice period, interview completion rate, offer acceptance rate, saved-by-recruiters count, and response time — not just skills and experience.</li>
+      <li><strong>Anti-gaming integrity:</strong> Honeypot detection filters out fake profiles using impossible skill claims, assessment contradictions, timeline inconsistencies, and Shannon entropy anomaly detection.</li>
+    </ul>
+  </div>
+  <div class="accent-bar"></div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════
+     SLIDE 4 — RANKING METHODOLOGY
+     ════════════════════════════════════════════════════════════════ -->
+<div class="slide">
+  <div class="slide-header">
+    <div class="header-left">
+      <span class="header-logo"><span class="dot"></span> redrob</span>
+      <span class="header-sep">│</span>
+      <span class="header-h2s">H2S</span>
+    </div>
+    <span class="header-india-runs">INDIA.RUNS</span>
+  </div>
+  <div class="slide-body">
+    <div class="slide-title">Ranking Methodology</div>
+    <div class="slide-subtitle" style="margin-bottom:14px;">4-Axis Weighted Composite Scoring</div>
+    <div class="pillars-grid" style="margin-bottom:16px;">
+      <div class="pillar-card p1">
+        <h4>🧠 Semantic Competency — 40%</h4>
+        <p>TF-IDF weighted cluster matching across 5 skill domains. Endorsement bonuses, assessment score integration, and cohesion penalty for skills without foundational programming.</p>
+      </div>
+      <div class="pillar-card p2">
+        <h4>📈 Career Trajectory — 30%</h4>
+        <p>Needleman-Wunsch career sequence alignment, PageRank corporate pedigree, promotion velocity gradient, education tier scoring, and consulting penalty.</p>
+      </div>
+      <div class="pillar-card p3">
+        <h4>🎯 Behavioral Intent — 20%</h4>
+        <p>Recruiter response rate, open-to-work flag, notice period, interview completion rate, offer acceptance rate, saved-by-recruiters, response time, and exponential activity decay.</p>
+      </div>
+      <div class="pillar-card p4">
+        <h4>📍 Location Intelligence — 10%</h4>
+        <p>Preferred cities (full score), acceptable cities (0.7), willing-to-relocate (0.6), and remote/other (0.2 baseline).</p>
+      </div>
+    </div>
+    <div class="code-block" style="text-align:center;">
+      <span class="keyword">Final Score</span> = (<span class="func">Skills</span> × <span class="number">0.40</span>) + (<span class="func">Experience</span> × <span class="number">0.30</span>) + (<span class="func">Behavior</span> × <span class="number">0.20</span>) + (<span class="func">Location</span> × <span class="number">0.10</span>)
+    </div>
+  </div>
+  <div class="accent-bar"></div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════
+     SLIDE 5 — EXPLAINABILITY & DATA VALIDATION
+     ════════════════════════════════════════════════════════════════ -->
+<div class="slide">
+  <div class="slide-header">
+    <div class="header-left">
+      <span class="header-logo"><span class="dot"></span> redrob</span>
+      <span class="header-sep">│</span>
+      <span class="header-h2s">H2S</span>
+    </div>
+    <span class="header-india-runs">INDIA.RUNS</span>
+  </div>
+  <div class="slide-body">
+    <div class="slide-title">Explainability & Data Validation</div>
+    <ul class="bullet-list">
+      <li><strong>How ranking decisions are explained:</strong> Every shortlisted candidate receives a deterministic, context-aware XAI rationale built from actual matched clusters, career velocity metrics, and behavioral signals — not templates. Example: <em>"Exceptional technical fit, covering 5/5 semantic clusters. 6.4 years of steady progression. Tier-1 academic background. Open to work, saved by 26 recruiters."</em></li>
+      <li><strong>Preventing hallucinations:</strong> The system is fully deterministic — no LLM inference, no probabilistic outputs. Every score is computed from explicit rules, every rationale is assembled from actual data points. Run it 100 times — identical output.</li>
+      <li><strong>Handling suspicious profiles:</strong> Multi-layer honeypot detection:<br/>
+        &bull; <strong>Impossible Claims</strong> — "Expert" proficiency + 0 months usage = instant disqualification<br/>
+        &bull; <strong>Assessment Contradiction</strong> — Claims expert but scored &lt;30 on platform test<br/>
+        &bull; <strong>Timeline Fraud</strong> — 10+ years stated, career history shows &lt;1 year<br/>
+        &bull; <strong>Shannon Entropy Anomaly</strong> — Text entropy deviating &gt;2σ from population mean flags keyword-stuffed/machine-generated profiles
+      </li>
+    </ul>
+  </div>
+  <div class="accent-bar"></div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════
+     SLIDE 6 — END-TO-END WORKFLOW
+     ════════════════════════════════════════════════════════════════ -->
+<div class="slide">
+  <div class="slide-header">
+    <div class="header-left">
+      <span class="header-logo"><span class="dot"></span> redrob</span>
+      <span class="header-sep">│</span>
+      <span class="header-h2s">H2S</span>
+    </div>
+    <span class="header-india-runs">INDIA.RUNS</span>
+  </div>
+  <div class="slide-body">
+    <div class="slide-title">End-to-End Workflow</div>
+
+    <!-- Row 1: Data Pipeline -->
+    <div class="flow-row" style="margin-bottom:18px;">
+      <div class="flow-box flow-box-dark">
+        <div class="flow-label" style="color:rgba(255,255,255,0.5);">Input</div>
+        <div class="flow-text">candidates.jsonl<br/><span style="font-size:0.6rem;opacity:0.7;">100K+ profiles</span></div>
+      </div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-box">
+        <div class="flow-label">Phase 1</div>
+        <div class="flow-text">Pre-Scan<br/><span style="font-size:0.6rem;color:#777;">TF-IDF · Entropy · PageRank</span></div>
+      </div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-box">
+        <div class="flow-label">Phase 2</div>
+        <div class="flow-text">Parallel Scoring<br/><span style="font-size:0.6rem;color:#777;">N CPU cores · 4-axis eval</span></div>
+      </div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-box">
+        <div class="flow-label">Phase 3</div>
+        <div class="flow-text">Sort & Rank<br/><span style="font-size:0.6rem;color:#777;">Deterministic tie-break</span></div>
+      </div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-box">
+        <div class="flow-label">Phase 4</div>
+        <div class="flow-text">XAI Reasoning<br/><span style="font-size:0.6rem;color:#777;">Top-100 rationales</span></div>
+      </div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-box flow-box-dark">
+        <div class="flow-label" style="color:rgba(255,255,255,0.5);">Output</div>
+        <div class="flow-text">team_submission.csv</div>
+      </div>
+    </div>
+
+    <!-- Row 2: UI Pipeline -->
+    <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--purple);margin-bottom:8px;">Interactive Dashboard Flow</div>
+    <div class="flow-row" style="margin-bottom:16px;">
+      <div class="flow-box">
+        <div class="flow-label">Step 1</div>
+        <div class="flow-text">Define Role</div>
+      </div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-box">
+        <div class="flow-label">Step 2</div>
+        <div class="flow-text">Upload CSV</div>
+      </div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-box">
+        <div class="flow-label">Step 3</div>
+        <div class="flow-text">Processing</div>
+      </div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-box">
+        <div class="flow-label">Step 4</div>
+        <div class="flow-text">Results Dashboard</div>
+      </div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-box">
+        <div class="flow-label">Step 5</div>
+        <div class="flow-text">Invite / Decline</div>
+      </div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-box">
+        <div class="flow-label">Feedback</div>
+        <div class="flow-text">Active Learning</div>
+      </div>
+    </div>
+
+    <div style="background:#f9f8ff;border:1px solid #ede9fe;border-radius:8px;padding:12px 16px;font-size:0.76rem;color:#555;line-height:1.5;">
+      <strong style="color:var(--black);">Key:</strong> The CLI engine (top row) generates the ranked CSV. The dashboard (bottom row) consumes it and lets recruiters interactively explore, compare, and provide feedback that updates scoring weights via a perceptron learning step. All processing is local — zero network calls.
+    </div>
+  </div>
+  <div class="accent-bar"></div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════
+     SLIDE 7 — SYSTEM ARCHITECTURE
+     ════════════════════════════════════════════════════════════════ -->
+<div class="slide">
+  <div class="slide-header">
+    <div class="header-left">
+      <span class="header-logo"><span class="dot"></span> redrob</span>
+      <span class="header-sep">│</span>
+      <span class="header-h2s">H2S</span>
+    </div>
+    <span class="header-india-runs">INDIA.RUNS</span>
+  </div>
+  <div class="slide-body">
+    <div class="slide-title">System Architecture</div>
+
+    <div class="two-col">
+      <div>
+        <div class="arch-layer">
+          <div class="arch-layer-title">Layer 1 — Ranking Engine (Python CLI)</div>
+          <ul>
+            <li><strong>run.py</strong> — Main orchestrator. Reads JSONL/GZ, runs pipeline, outputs CSV.</li>
+            <li><strong>scorer.py</strong> — Core 4-axis scoring engine: semantic clusters, trajectory, behavior, location.</li>
+            <li><strong>reasoning_engine.py</strong> — XAI rationale generator for top-100 candidates.</li>
+            <li><strong>config.py</strong> — Loads jd_rules.json, defines scoring weights.</li>
+          </ul>
+        </div>
+        <div class="arch-layer">
+          <div class="arch-layer-title">Layer 2 — Interactive Dashboard (HTML/JS)</div>
+          <ul>
+            <li>Pure HTML + JavaScript single-file application</li>
+            <li>No Node.js, no build steps, no npm, no framework</li>
+            <li>Weight sliders, A/B comparison, active learning loop</li>
+            <li>LocalStorage-persisted recruiter preference profiles</li>
+          </ul>
+        </div>
+      </div>
+      <div>
+        <div class="arch-layer">
+          <div class="arch-layer-title">Pre-Scan Phase (Global Context)</div>
+          <ul>
+            <li><strong>TF-IDF Calculator</strong> — Computes rarity weights across all keywords in pool</li>
+            <li><strong>PageRank Graph</strong> — Builds company transition graph, runs 10 iterations</li>
+            <li><strong>Shannon Entropy Baseline</strong> — Computes mean & σ for anomaly detection</li>
+          </ul>
+        </div>
+        <div class="arch-layer">
+          <div class="arch-layer-title">Algorithmic Highlights</div>
+          <ul>
+            <li><strong>Needleman-Wunsch</strong> — DP career sequence alignment (bioinformatics)</li>
+            <li><strong>PageRank</strong> — Dynamic corporate pedigree scoring</li>
+            <li><strong>Shannon Entropy</strong> — Statistical anti-gaming detection</li>
+            <li><strong>RLRF</strong> — Single-layer perceptron for recruiter active learning</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="accent-bar"></div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════
+     SLIDE 8 — RESULTS & PERFORMANCE
+     ════════════════════════════════════════════════════════════════ -->
+<div class="slide">
+  <div class="slide-header">
+    <div class="header-left">
+      <span class="header-logo"><span class="dot"></span> redrob</span>
+      <span class="header-sep">│</span>
+      <span class="header-h2s">H2S</span>
+    </div>
+    <span class="header-india-runs">INDIA.RUNS</span>
+  </div>
+  <div class="slide-body">
+    <div class="slide-title">Results & Performance</div>
+
+    <div class="metrics-grid" style="margin-bottom:18px;">
+      <div class="metric-card">
+        <div class="metric-value">100,000+</div>
+        <div class="metric-label">Profiles Processed</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value">~34s</div>
+        <div class="metric-label">Total Processing Time</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value">8×</div>
+        <div class="metric-label">Faster Than Time Limit</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value">&lt;200 MB</div>
+        <div class="metric-label">RAM Usage</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value">Zero</div>
+        <div class="metric-label">External API Calls</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value">✓ Passed</div>
+        <div class="metric-label">Validation Script</div>
+      </div>
+    </div>
+
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Capability</th>
+          <th>Our System</th>
+          <th>Traditional ATS</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Matching Method</td>
+          <td><strong>Semantic cluster + TF-IDF + endorsements</strong></td>
+          <td>Exact keyword frequency</td>
+        </tr>
+        <tr>
+          <td>Career Analysis</td>
+          <td><strong>Needleman-Wunsch alignment + PageRank pedigree</strong></td>
+          <td>Simple years-of-experience count</td>
+        </tr>
+        <tr>
+          <td>Anti-Gaming</td>
+          <td><strong>Shannon entropy + multi-layer honeypot</strong></td>
+          <td>None</td>
+        </tr>
+        <tr>
+          <td>Explainability</td>
+          <td><strong>Deterministic XAI rationale per candidate</strong></td>
+          <td>None / generic template</td>
+        </tr>
+        <tr>
+          <td>Continuous Learning</td>
+          <td><strong>Recruiter feedback → perceptron weight update</strong></td>
+          <td>Manual rule tuning</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="accent-bar"></div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════
+     SLIDE 9 — TECHNOLOGIES USED
+     ════════════════════════════════════════════════════════════════ -->
+<div class="slide">
+  <div class="slide-header">
+    <div class="header-left">
+      <span class="header-logo"><span class="dot"></span> redrob</span>
+      <span class="header-sep">│</span>
+      <span class="header-h2s">H2S</span>
+    </div>
+    <span class="header-india-runs">INDIA.RUNS</span>
+  </div>
+  <div class="slide-body">
+    <div class="slide-title">Technologies Used</div>
+
+    <div class="two-col" style="gap:24px;">
+      <div>
+        <div class="slide-subtitle" style="margin-bottom:10px;">Backend / Engine</div>
+        <div class="tag-row" style="margin-bottom:14px;">
+          <span class="tag tag-purple">Python 3.8+</span>
+          <span class="tag tag-purple">multiprocessing</span>
+          <span class="tag tag-purple">json</span>
+          <span class="tag tag-purple">csv</span>
+          <span class="tag tag-purple">math</span>
+          <span class="tag tag-purple">re</span>
+          <span class="tag tag-purple">gzip</span>
+          <span class="tag tag-purple">argparse</span>
+        </div>
+
+        <div class="slide-subtitle" style="margin-bottom:10px;">Algorithms & Techniques</div>
+        <div class="tag-row" style="margin-bottom:14px;">
+          <span class="tag tag-blue">TF-IDF Weighting</span>
+          <span class="tag tag-blue">Needleman-Wunsch DP</span>
+          <span class="tag tag-blue">PageRank</span>
+          <span class="tag tag-blue">Shannon Entropy</span>
+          <span class="tag tag-blue">Exponential Decay</span>
+          <span class="tag tag-blue">Perceptron Learning</span>
+        </div>
+
+        <div class="slide-subtitle" style="margin-bottom:10px;">Frontend / Dashboard</div>
+        <div class="tag-row">
+          <span class="tag tag-green">HTML5</span>
+          <span class="tag tag-green">Vanilla JavaScript</span>
+          <span class="tag tag-green">CSS3</span>
+          <span class="tag tag-green">LocalStorage API</span>
+          <span class="tag tag-green">Zero Dependencies</span>
+        </div>
+      </div>
+
+      <div>
+        <div class="slide-subtitle" style="margin-bottom:10px;">Key Design Decisions</div>
+        <ul class="bullet-list" style="gap:10px;">
+          <li><strong>Pure Python stdlib:</strong> Zero external dependencies for the core engine — no pip install required. Guarantees sandbox compatibility.</li>
+          <li><strong>Multiprocessing pool:</strong> Parallelizes scoring across all CPU cores with optimized chunk sizes for minimal IPC overhead.</li>
+          <li><strong>Single-file frontend:</strong> The entire dashboard is one HTML file — no Node.js, no build tools, no server required.</li>
+          <li><strong>JSON-driven config:</strong> All role requirements in one file — swap JD without code changes.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="accent-bar"></div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════
+     SLIDE 10 — SUBMISSION ASSETS
+     ════════════════════════════════════════════════════════════════ -->
+<div class="slide">
+  <div class="slide-header">
+    <div class="header-left">
+      <span class="header-logo"><span class="dot"></span> redrob</span>
+      <span class="header-sep">│</span>
+      <span class="header-h2s">H2S</span>
+    </div>
+    <span class="header-india-runs">INDIA.RUNS</span>
+  </div>
+  <div class="slide-body">
+    <div class="slide-title">Submission Assets</div>
+
+    <ul class="asset-list" style="margin-bottom:18px;">
+      <li>
+        <span class="asset-icon">📄</span>
+        <div><strong>team_submission.csv</strong> — Final ranked output with 100 candidates: <code>candidate_id, rank, score, reasoning</code>. Passed the official <code>validate_submission.py</code> with zero errors.</div>
+      </li>
+      <li>
+        <span class="asset-icon">⚙️</span>
+        <div><strong>run.py</strong> — Main orchestrator script. Usage: <code>python run.py --candidates candidates.jsonl --out team_submission.csv</code></div>
+      </li>
+      <li>
+        <span class="asset-icon">🧠</span>
+        <div><strong>src/</strong> — Core engine modules: <code>scorer.py</code> (4-axis ranking), <code>reasoning_engine.py</code> (XAI), <code>config.py</code> (weights & JD rules loader)</div>
+      </li>
+      <li>
+        <span class="asset-icon">🌐</span>
+        <div><strong>frontend/index.html</strong> — Interactive recruiter dashboard. Zero-dependency single-file web app with weight sliders, candidate cards, search, and active learning.</div>
+      </li>
+      <li>
+        <span class="asset-icon">📋</span>
+        <div><strong>data/jd_rules.json</strong> — Job description configuration: role, semantic clusters, experience bands, locations, company tiers. Fully customizable without code changes.</div>
+      </li>
+      <li>
+        <span class="asset-icon">📝</span>
+        <div><strong>system_design.md</strong> — Complete system architecture & design specification with Mermaid diagrams and algorithmic formulas.</div>
+      </li>
+      <li>
+        <span class="asset-icon" style="background:#059669;">🔗</span>
+        <div><strong>GitHub Repo:</strong> <a href="https://github.com/Praveen-ing/redrob-ai-ranker" style="color:#6d28d9;font-weight:600;">github.com/Praveen-ing/redrob-ai-ranker</a> &nbsp;|&nbsp; <strong>AI Tools:</strong> Cursor/Gemini AI for code architecture and pair programming (declared in submission_metadata.yaml)</div>
+      </li>
+    </ul>
+  </div>
+  <div class="accent-bar"></div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════
+     SLIDE 11 — THANK YOU
+     ════════════════════════════════════════════════════════════════ -->
+<div class="slide title-slide">
+  <div class="title-hero" style="flex:1;justify-content:center;">
+    <div class="title-logos">
+      <span class="title-logo-text"><span class="dot"></span> redrob</span>
+      <span class="title-logo-sep">│</span>
+      <span class="title-logo-text" style="letter-spacing:1.5px;">H2S</span>
+    </div>
+    <div class="title-india-runs" style="font-size:2.4rem;margin-bottom:8px;">Thank You</div>
+    <span class="title-tagline" style="margin-bottom:20px;">Team TOPGUN — Building what next India runs on</span>
+    <div style="z-index:1;display:flex;flex-direction:column;gap:6px;align-items:center;margin-top:10px;">
+      <span style="font-size:0.82rem;color:rgba(255,255,255,0.7);">Nethavath Praveen &nbsp;·&nbsp; Sri Abhinaya &nbsp;·&nbsp; Botsa Radesh &nbsp;·&nbsp; Sai Sameer Killamsetti</span>
+      <a href="https://github.com/Praveen-ing/redrob-ai-ranker" style="font-size:0.78rem;color:var(--purple-light);text-decoration:none;font-weight:600;">github.com/Praveen-ing/redrob-ai-ranker</a>
+    </div>
+  </div>
+  <div class="accent-bar"></div>
+</div>
+
+
+</body>
+</html>
