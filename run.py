@@ -10,6 +10,23 @@ from scorer import score_candidate
 from reasoning_engine import generate_reasoning
 from config import JD_RULES
 
+def score_candidate_worker(args):
+    candidate, custom_weights, global_stats = args
+    try:
+        from scorer import score_candidate
+        score, sub_scores, is_honeypot = score_candidate(candidate, custom_weights=custom_weights, global_stats=global_stats)
+        if not is_honeypot:
+            return {
+                'candidate_id': candidate.get('candidate_id'),
+                'score': score,
+                'sub_scores': sub_scores,
+                'candidate_data': candidate
+            }
+    except Exception as e:
+        pass
+    return None
+
+
 def calculate_text_entropy(text):
     import math
     import re
@@ -156,19 +173,20 @@ def process_candidates(candidates_path, limit=100, custom_weights=None):
     print(f"Pre-scanning {len(candidates)} candidates for global pool context...")
     global_stats = get_global_stats(candidates)
     
-    print("Scoring candidates...")
-    for i, candidate in enumerate(candidates):
-        try:
-            score, sub_scores, is_honeypot = score_candidate(candidate, custom_weights=custom_weights, global_stats=global_stats)
-            if not is_honeypot:
-                scored_candidates.append({
-                    'candidate_id': candidate.get('candidate_id'),
-                    'score': score,
-                    'sub_scores': sub_scores,
-                    'candidate_data': candidate
-                })
-        except Exception as e:
-            print(f"Error processing candidate at index {i}: {e}")
+    print("Scoring candidates (using multiprocessing parallel pool)...")
+    import multiprocessing
+    
+    # Calculate chunk size to balance worker loads and minimize IPC overhead
+    num_cores = multiprocessing.cpu_count()
+    chunk_size = max(1, len(candidates) // (num_cores * 4))
+    
+    print(f"Spawning parallel pool with {num_cores} worker processes...")
+    worker_args = [(c, custom_weights, global_stats) for c in candidates]
+    
+    with multiprocessing.Pool(processes=num_cores) as pool:
+        for res in pool.imap_unordered(score_candidate_worker, worker_args, chunksize=chunk_size):
+            if res is not None:
+                scored_candidates.append(res)
                 
     # Sort candidates by rounded score descending, then by candidate_id ascending for tie-breaks
     print(f"Sorting {len(scored_candidates)} valid candidates...")
