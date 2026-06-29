@@ -1,0 +1,317 @@
+\documentclass[aspectratio=169]{beamer}
+\usetheme{Madrid}
+\usecolortheme{default}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{booktabs}
+
+\title{The Data \& AI Challenge}
+\subtitle{Rethinking Candidate Discovery: Beyond Keywords}
+\author{Team: TOPGUN}
+\date{}
+
+\begin{document}
+
+% Slide 1
+\begin{frame}
+  \titlepage
+\end{frame}
+
+% Slide 2 (Team Members)
+\begin{frame}{Team TOPGUN}
+  \begin{itemize}
+    \item \textbf{Nethavath Praveen} (Leader) -- \href{mailto:praveeeening@gmail.com}{praveeeening@gmail.com}
+    \item \textbf{Abhinaya Nunna} -- \href{mailto:abhinayaseven@gmail.com}{abhinayaseven@gmail.com}
+    \item \textbf{Botsa Radesh} -- \href{mailto:radeshbotsa@gmail.com}{radeshbotsa@gmail.com}
+    \item \textbf{Sai Sameer Killamsetti} -- \href{mailto:saisameerkillamsetty8@gmail.com}{saisameerkillamsetty8@gmail.com}
+  \end{itemize}
+\end{frame}
+
+% Slide 2
+\begin{frame}{Executive Summary}
+  \begin{itemize}
+    \item \textbf{Objective:} Build an intelligent candidate discovery and ranking system.
+    \item \textbf{Core Philosophy:} Rank candidates based on semantic meaning, career trajectory, and behavioral intent, rather than basic keyword frequency.
+    \item \textbf{Performance:} Process 100,000+ candidates in under 35 seconds.
+    \item \textbf{Architecture:} Fully offline, deterministic, and highly scalable.
+    \item \textbf{Transparency:} Integrated Explainable AI (XAI) for every scored profile.
+  \end{itemize}
+\end{frame}
+
+% Slide 3
+\begin{frame}{The Problem Statement}
+  \framesubtitle{The Limitations of Traditional ATS}
+  \begin{itemize}
+    \item \textbf{Keyword Reliance:} Traditional systems count how many times a term appears.
+    \item \textbf{Lack of Context:} "Used Python in college" vs. "Architected a Python microservice" are scored identically.
+    \item \textbf{Recruiter Fatigue:} Teams waste hours sifting through falsely-ranked profiles.
+    \item \textbf{Missed Talent:} Exceptional engineers who write concise resumes get buried beneath keyword-stuffed profiles.
+  \end{itemize}
+\end{frame}
+
+% Slide 4
+\begin{frame}{The Flaws of Current ATS Systems}
+  \framesubtitle{"Keyword Stuffers" vs. True Experts}
+  \begin{itemize}
+    \item \textbf{The Stuffer:} Pastes the entire job description in white font or tiny text. Scores 100\% on legacy ATS.
+    \item \textbf{The Expert:} Focuses on impact, system design, and leadership. Often omits basic technology tags they mastered a decade ago.
+    \item \textbf{The Consequence:} A fundamental misalignment between the tool's output and the recruiter's actual need.
+  \end{itemize}
+\end{frame}
+
+% Slide 5
+\begin{frame}{Our Solution Overview}
+  \begin{itemize}
+    \item \textbf{Semantic Understanding:} We group skills by meaning, not string matches.
+    \item \textbf{Career Shape Analysis:} We look at the trajectory of titles over time.
+    \item \textbf{Intent Scoring:} We measure how actively the candidate is looking.
+    \item \textbf{Anti-Gaming Integrity:} We statistically detect and penalize artificial inflation.
+    \item \textbf{The Result:} A rank order that accurately mimics an expert human recruiter.
+  \end{itemize}
+\end{frame}
+
+% Slide 6
+\begin{frame}{The 4 Pillars of Intelligent Ranking}
+  Our engine evaluates candidates across four heavily weighted axes:
+  \begin{enumerate}
+    \item \textbf{Semantic Competency (40\%):} Technical fit across clustered concepts.
+    \item \textbf{Career Trajectory (30\%):} Pace of promotion and company pedigree.
+    \item \textbf{Behavioral Intent (20\%):} Engagement signals and readiness to move.
+    \item \textbf{Location Intelligence (10\%):} Geographical alignment with the role.
+  \end{enumerate}
+\end{frame}
+
+% Slide 7
+\begin{frame}{Pillar 1: Semantic Competency (40\%)}
+  \framesubtitle{Moving Beyond Exact String Matches}
+  \begin{itemize}
+    \item \textbf{The Goal:} Recognize category expertise.
+    \item \textbf{Mechanism:} If a job requires "Vector Databases," candidates get credit if they list Pinecone, Weaviate, FAISS, or ChromaDB.
+    \item \textbf{Score Calculation:} Proportional to the number of critical semantic clusters a candidate possesses.
+    \item \textbf{Bonus Allocation:} Additional weighting for full-stack capability across multiple disjoint clusters.
+  \end{itemize}
+\end{frame}
+
+% Slide 8
+\begin{frame}{Skill Clusters in Practice}
+  \begin{table}
+    \centering
+    \begin{tabular}{@{}ll@{}}
+      \toprule
+      \textbf{Cluster Category} & \textbf{Accepted Technologies} \\
+      \midrule
+      Core Programming & Python, Go, C++, Java \\
+      Vector Databases & Pinecone, Weaviate, Qdrant, Milvus, FAISS \\
+      Retrieval \& Ranking & BM25, Cross-encoders, NDCG, Hybrid Search \\
+      LLM Engineering & Fine-tuning, LoRA, LangChain, HuggingFace \\
+      Infrastructure & Docker, Kubernetes, FastAPI, AWS, GCP \\
+      \bottomrule
+    \end{tabular}
+  \end{table}
+\end{frame}
+
+% Slide 9
+\begin{frame}{Pillar 2: Career Trajectory (30\%)}
+  \framesubtitle{Promotion Velocity and Experience Bands}
+  \begin{itemize}
+    \item \textbf{Experience Banding:} Evaluates if the total years of experience fit the "Ideal," "Acceptable," or "Outside" parameters for the role.
+    \item \textbf{Promotion Velocity:} Rewards candidates showing rapid progression (e.g., multiple "Senior" or "Lead" titles in a short span).
+    \item \textbf{Quality over Quantity:} Focuses on what the candidate has achieved during their tenure, rather than purely counting months.
+  \end{itemize}
+\end{frame}
+
+% Slide 10
+\begin{frame}{Dynamic Career Sequence Alignment}
+  \framesubtitle{Applying Bioinformatics to Resumes}
+  \begin{itemize}
+    \item \textbf{Algorithm:} Adapts the Needleman-Wunsch sequence alignment algorithm.
+    \item \textbf{Ideal Sequence:} [Junior $\rightarrow$ Mid $\rightarrow$ Senior $\rightarrow$ Lead $\rightarrow$ Principal]
+    \item \textbf{Execution:} Aligns a candidate's actual job titles against the ideal progression.
+    \item \textbf{Scoring:} 
+    \begin{itemize}
+      \item Match Reward (+1.0)
+      \item Gap Penalty (-0.5 for career stagnation)
+      \item Mismatch Penalty (for erratic jumps)
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+% Slide 11
+\begin{frame}{Corporate Pedigree via PageRank}
+  \begin{itemize}
+    \item \textbf{The Concept:} Not all experience is equal. Moving from highly-selective companies indicates a strong pedigree.
+    \item \textbf{Implementation:} We build a directed transition graph ($Company_A \rightarrow Company_B$) across the entire candidate pool.
+    \item \textbf{PageRank Execution:} Running a localized PageRank determines the "authority" of organizations dynamically, without hardcoding lists.
+    \item \textbf{Result:} Candidates coming from high-authority nodes receive a strategic score boost.
+  \end{itemize}
+\end{frame}
+
+% Slide 12
+\begin{frame}{Pillar 3: Behavioral Intent (20\%)}
+  \framesubtitle{Measuring Engagement}
+  \begin{itemize}
+    \item \textbf{Recruiter Response Rate:} Candidates who historically reply to outreach rank higher.
+    \item \textbf{Open-to-Work Status:} Active job seekers get a meaningful visibility boost.
+    \item \textbf{Platform Activity:} Recent logins and updates signal genuine interest.
+    \item \textbf{Notice Period:} Shorter notice periods are rewarded; heavily extended ones receive slight penalties depending on the role urgency.
+  \end{itemize}
+\end{frame}
+
+% Slide 13
+\begin{frame}{Pillar 4: Location Intelligence (10\%)}
+  \framesubtitle{Geographical Alignment}
+  \begin{itemize}
+    \item \textbf{Configurable Zones:} Roles define preferred and acceptable cities.
+    \item \textbf{Preferred Cities (e.g., Pune, Delhi NCR):} Grants full location score (1.0).
+    \item \textbf{Acceptable Cities (e.g., Bangalore, Mumbai):} Grants moderate score (0.7).
+    \item \textbf{Remote / Unlisted:} Grants baseline score (0.4) to avoid entirely eliminating remote-willing candidates.
+  \end{itemize}
+\end{frame}
+
+% Slide 14
+\begin{frame}{System Integrity \& Anti-Gaming}
+  \framesubtitle{Defeating the Keyword Stuffers}
+  \begin{itemize}
+    \item Our system automatically filters deceptive profiles into a "honeypot" quarantine.
+    \item \textbf{Impossible Claims:} Flags "Expert" proficiency attached to 0 months of usage.
+    \item \textbf{Timeline Inconsistencies:} Flags claims of 10+ years of experience that do not map to the actual career timeline provided.
+    \item Protects the integrity of the recruiter's shortlist.
+  \end{itemize}
+\end{frame}
+
+% Slide 15
+\begin{frame}{Shannon Entropy Anomaly Detection}
+  \framesubtitle{Statistical Profiling}
+  \begin{itemize}
+    \item \textbf{The Theory:} Natural human language has a predictable distribution of vocabulary.
+    \item \textbf{The Math:} We calculate the Shannon Entropy of the resume text.
+    $$H(X) = -\sum P(x_i) \log_2 P(x_i)$$
+    \item \textbf{The Trigger:} Profiles whose vocabulary entropy deviates by more than $2\sigma$ from the population mean are automatically flagged.
+    \item \textbf{The Result:} Successfully catches machine-generated, keyword-stuffed, and white-fonted resumes.
+  \end{itemize}
+\end{frame}
+
+% Slide 16
+\begin{frame}{High-Level System Architecture}
+  \begin{itemize}
+    \item \textbf{Two Primary Layers:}
+    \begin{enumerate}
+      \item Parallelized Python Engine (Offline CLI)
+      \item Interactive Recruiter Sandbox (Frontend UI)
+    \end{enumerate}
+    \item \textbf{Ingestion:} O(N) streaming scanner restricts memory footprint under 200MB.
+    \item \textbf{Pre-Scan Phase:} Calculates global TF-IDF weights and entropy baselines.
+    \item \textbf{Execution:} Multiprocessing pool shards candidates across CPU cores.
+  \end{itemize}
+\end{frame}
+
+% Slide 17
+\begin{frame}{The Parallelized Scoring Engine}
+  \begin{itemize}
+    \item \textbf{Speed:} Processes batches of candidates concurrently across all available cores.
+    \item \textbf{Benchmark:} 100,000+ candidate profiles ranked in \textbf{under 35 seconds} on a standard CPU.
+    \item \textbf{Efficiency:} Achieves execution well within the 5-minute hackathon limit.
+    \item \textbf{Deterministic Sort:} Ranks by $(-round(score, 4), candidate\_id)$ guaranteeing identical results on every rerun.
+  \end{itemize}
+\end{frame}
+
+% Slide 18
+\begin{frame}{Explainable AI (XAI)}
+  \framesubtitle{Generating Deterministic Rationale}
+  \begin{itemize}
+    \item \textbf{No Black Boxes:} Every shortlist placement must be justifiable.
+    \item \textbf{Context-Aware Generation:} The engine writes human-readable rationale based on actual matched parameters.
+    \item \textbf{Example Output:} \textit{"Exceptional technical fit, covering 4/5 core semantic clusters. 6.5 years of steady progression. Background includes Tier-1 product companies."}
+    \item Builds trust between the algorithm and the recruiter.
+  \end{itemize}
+\end{frame}
+
+% Slide 19
+\begin{frame}{Fully Offline Operation}
+  \framesubtitle{Meeting Strict Privacy and Latency Constraints}
+  \begin{itemize}
+    \item \textbf{Zero API Calls:} The entire pipeline runs using Python's standard library.
+    \item \textbf{No OpenAI/Cloud Dependency:} Eliminates network latency, API rate limits, and token costs.
+    \item \textbf{Security:} Enterprise-ready approach where candidate PII never leaves the local machine.
+    \item Complies 100\% with sandbox environment restrictions.
+  \end{itemize}
+\end{frame}
+
+% Slide 20
+\begin{frame}{Configurable Job Descriptions}
+  \begin{itemize}
+    \item \textbf{Adaptability:} No code changes required to hire for a different role.
+    \item \textbf{JSON Driven:} All role requirements exist in \texttt{data/jd\_rules.json}.
+    \item \textbf{Customization:} Recruiters can easily modify:
+    \begin{itemize}
+      \item Target Role Title
+      \item Experience Minimums and Maximums
+      \item Semantic Skill Clusters
+      \item Preferred Locations and Company Tiers
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+% Slide 21
+\begin{frame}{The Recruiter Dashboard UI}
+  \framesubtitle{Zero Setup, Maximum Insight}
+  \begin{itemize}
+    \item \textbf{The Technology:} A pure HTML/JS single-file application. No Node.js, no build steps.
+    \item \textbf{Accessibility:} Runs directly in any modern browser immediately after the CLI engine finishes.
+    \item \textbf{Purpose:} Translates the raw CSV output into an interactive, visual sandbox for recruiters.
+  \end{itemize}
+\end{frame}
+
+% Slide 22
+\begin{frame}{Dashboard Features in Detail}
+  \begin{itemize}
+    \item \textbf{CSV Upload:} Drag-and-drop the generated \texttt{team\_submission.csv}.
+    \item \textbf{Candidate Cards:} Visual display of rank, score, and the AI rationale.
+    \item \textbf{Click-to-Expand:} Opens a detailed scoring breakdown with individual progress bars for Skills, Experience, and Intent.
+    \item \textbf{Export Capabilities:} One-click re-export of filtered/sorted results.
+  \end{itemize}
+\end{frame}
+
+% Slide 23
+\begin{frame}{Active Learning Loop (RLRF)}
+  \framesubtitle{Continuous Improvement}
+  \begin{itemize}
+    \item \textbf{Recruiter Feedback:} Dashboard allows recruiters to "Invite" or "Decline" candidates.
+    \item \textbf{Weight Adjustment:} The system uses a single-layer perceptron training step to update category weights based on user preference.
+    \item \textbf{Adaptation:} Over time, the local weights shift to match the specific hiring manager's implicit preferences.
+  \end{itemize}
+\end{frame}
+
+% Slide 24
+\begin{frame}{Performance Metrics \& Constraints}
+  \begin{table}
+    \centering
+    \begin{tabular}{@{}ll@{}}
+      \toprule
+      \textbf{Metric} & \textbf{Value} \\
+      \midrule
+      Dataset size & 100,000+ candidate profiles \\
+      Processing time & $\sim$34 seconds \\
+      Memory usage & $<$ 500 MB RAM \\
+      External API calls & Zero \\
+      Dependencies & Pure Python stdlib (Core Engine) \\
+      Hackathon Time Limit & 5 minutes (We are 8$\times$ faster) \\
+      \bottomrule
+    \end{tabular}
+  \end{table}
+\end{frame}
+
+% Slide 25
+\begin{frame}{Conclusion \& Impact}
+  \begin{itemize}
+    \item \textbf{For Recruiters:} Drastically reduces time-to-shortlist from days to 35 seconds.
+    \item \textbf{For Candidates:} Rewards actual career growth, system design skills, and intent---not just resume hacking.
+    \item \textbf{For Redrob:} A highly scalable, production-ready heuristic engine adaptable to any JD via a simple configuration.
+  \end{itemize}
+  \vspace{2em}
+  \begin{center}
+    \textbf{Thank you! Check out our GitHub Repo.}
+  \end{center}
+\end{frame}
+
+\end{document}

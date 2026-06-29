@@ -22,20 +22,35 @@ def calculate_text_entropy(text):
 def is_honeypot(candidate, global_stats=None):
     """
     Checks if a candidate is a honeypot based on impossible patterns.
+    Also checks skill assessment scores for contradictions.
     """
+    signals = candidate.get('redrob_signals', {})
+    assessment_scores = signals.get('skill_assessment_scores', {})
+
     for skill in candidate.get('skills', []):
-        if skill.get('proficiency') == 'expert' and skill.get('duration_months', 1) == 0:
+        skill_name = skill.get('name', '').lower()
+        proficiency = skill.get('proficiency', '')
+
+        # Impossible claim: expert proficiency with 0 months used
+        if proficiency == 'expert' and skill.get('duration_months', 1) == 0:
             return True
-            
+
+        # Contradictory assessment: claims expert but scored below 30 on platform test
+        if proficiency == 'expert' and assessment_scores:
+            for key, score in assessment_scores.items():
+                if key.lower() in skill_name or skill_name in key.lower():
+                    if score < 30:
+                        return True
+
     stated_yoe = candidate.get('profile', {}).get('years_of_experience', 0)
     total_career_months = sum(job.get('duration_months', 0) for job in candidate.get('career_history', []))
     career_yoe = total_career_months / 12.0
-    
+
     if stated_yoe > 5 and career_yoe < 1:
         return True
     if career_yoe > stated_yoe + 5:
         return True
-        
+
     # Shannon Entropy Anomaly Checker
     if global_stats and 'entropy_mean' in global_stats:
         candidate_text = []
@@ -45,46 +60,64 @@ def is_honeypot(candidate, global_stats=None):
             candidate_text.append(job.get('title', '').lower())
             candidate_text.append(job.get('description', '').lower())
         full_text = ' '.join(candidate_text)
-        
+
         ent = calculate_text_entropy(full_text)
         mean = global_stats['entropy_mean']
         std = global_stats['entropy_std']
-        
+
         if std > 0.1:
             if abs(ent - mean) > 2.0 * std:
                 return True
         else:
             if ent < 2.0 or ent > 8.0:
                 return True
-                
+
     return False
 
 def score_skills_semantic(candidate, custom_weights=None, global_stats=None):
     """
     Replaces keyword matching with Semantic Cluster mapping.
-    Evaluates how many functional clusters the candidate satisfies.
+    Also incorporates: profile summary/headline text, skill endorsements,
+    and platform skill assessment scores.
     """
     weights = custom_weights if custom_weights else WEIGHTS
     clusters = JD_RULES.get('semantic_clusters', {})
     if not clusters:
         return 0
-        
+
+    # Build full text including summary and headline (previously ignored)
     candidate_text = []
+    profile = candidate.get('profile', {})
+    candidate_text.append(profile.get('summary', '').lower())
+    candidate_text.append(profile.get('headline', '').lower())
+
     for skill in candidate.get('skills', []):
         candidate_text.append(skill.get('name', '').lower())
     for job in candidate.get('career_history', []):
         candidate_text.append(job.get('title', '').lower())
         candidate_text.append(job.get('description', '').lower())
-        
+
     full_text = ' '.join(candidate_text)
-    
+
+    # Build endorsement-weighted skill map
+    endorsement_map = {}
+    for skill in candidate.get('skills', []):
+        name = skill.get('name', '').lower()
+        endorsements = skill.get('endorsements', 0)
+        endorsement_map[name] = endorsements
+
+    # Build assessment score map from platform tests
+    signals = candidate.get('redrob_signals', {})
+    assessment_scores = signals.get('skill_assessment_scores', {})
+    normalized_assessments = {k.lower(): v for k, v in assessment_scores.items()}
+
     matched_clusters = []
     cluster_scores = {}
-    
+
     import math
     total_candidates = global_stats.get('total_candidates', 0) if global_stats else 0
     keyword_counts = global_stats.get('keyword_counts', {}) if global_stats else {}
-    
+
     def get_idf(kw):
         if total_candidates > 0 and kw in keyword_counts:
             count = keyword_counts[kw]
@@ -99,8 +132,23 @@ def score_skills_semantic(candidate, custom_weights=None, global_stats=None):
             idf = get_idf(kw_lower)
             cluster_idfs.append(idf)
             if kw_lower in full_text:
-                matched_idfs.append(idf)
-                
+                # Boost by endorsements: up to 15% bonus for highly endorsed skills
+                endorse_bonus = 1.0
+                for skill_name, end_count in endorsement_map.items():
+                    if kw_lower in skill_name or skill_name in kw_lower:
+                        endorse_bonus = 1.0 + min(0.15, end_count / 200.0)
+                        break
+
+                # Boost/penalize by platform assessment score if available
+                assess_mult = 1.0
+                for assess_key, assess_val in normalized_assessments.items():
+                    if kw_lower in assess_key or assess_key in kw_lower:
+                        # Scale: 0-40 penalizes, 60-100 boosts
+                        assess_mult = 0.5 + (assess_val / 100.0)
+                        break
+
+                matched_idfs.append(idf * endorse_bonus * assess_mult)
+
         if cluster_idfs:
             mean_idf = sum(cluster_idfs) / len(cluster_idfs)
             if mean_idf > 0:
@@ -109,7 +157,7 @@ def score_skills_semantic(candidate, custom_weights=None, global_stats=None):
                 c_score = 1.0 if matched_idfs else 0.0
         else:
             c_score = 0.0
-            
+
         if c_score > 0:
             matched_clusters.append(cluster_name)
             cluster_scores[cluster_name] = c_score
@@ -119,20 +167,20 @@ def score_skills_semantic(candidate, custom_weights=None, global_stats=None):
     total_clusters = len(clusters)
     if total_clusters == 0:
         return 0
-        
+
     coverage = sum(cluster_scores.values()) / total_clusters
-    
+
     # We want 80% coverage to equal 100 points
     raw_score = min(100, (coverage / 0.8) * 100)
-    
+
     # Co-occurrence Skill Cohesion (Jaccard-based logic)
     has_advanced = any(c in matched_clusters for c in ["Vector_Databases", "Retrieval_Ranking", "LLM_Engineering", "Infrastructure"])
     has_foundation = "Core_Programming" in matched_clusters
-    
+
     cohesion_factor = 1.0
     if has_advanced and not has_foundation:
-        cohesion_factor = 0.8 # 20% discount if advanced skills are listed without Core Programming
-        
+        cohesion_factor = 0.8  # 20% discount if advanced skills are listed without Core Programming
+
     final_skills_score = (raw_score / 100.0) * weights['skills'] * cohesion_factor
     return final_skills_score, matched_clusters
 
@@ -149,19 +197,19 @@ def needleman_wunsch_alignment(seqA, seqB):
         dp[i][0] = dp[i-1][0] + gap_penalty
     for j in range(1, m + 1):
         dp[0][j] = dp[0][j-1] + gap_penalty
-        
+
     for i in range(1, n + 1):
         for j in range(1, m + 1):
             valA = seqA[i-1]
             valB = seqB[j-1]
             # Similarity score: max +1.0 for match, decreases with distance
             match_score = 1.0 - abs(valA - valB) * 0.4
-            
+
             match = dp[i-1][j-1] + match_score
             delete = dp[i-1][j] + gap_penalty
             insert = dp[i][j-1] + gap_penalty
             dp[i][j] = max(match, delete, insert)
-            
+
     max_possible = float(len(seqB))
     raw_aligned = dp[n][m]
     norm_score = (raw_aligned + (n + m) * 0.5) / (max_possible + (n + m) * 0.5)
@@ -170,69 +218,78 @@ def needleman_wunsch_alignment(seqA, seqB):
 
 def score_career_trajectory(candidate, custom_weights=None, global_stats=None):
     """
-    Analyzes promotion velocity, company pedigree via PageRank, and career sequence alignment.
+    Analyzes promotion velocity, company pedigree via PageRank, career sequence alignment,
+    and education tier.
     """
     weights = custom_weights if custom_weights else WEIGHTS
     profile = candidate.get('profile', {})
     yoe = profile.get('years_of_experience', 0)
-    
+
     raw_score = 0
     ideal_min = JD_RULES['experience']['ideal_min']
     ideal_max = JD_RULES['experience']['ideal_max']
     abs_min = JD_RULES['experience']['absolute_min']
-    
+
     if ideal_min <= yoe <= ideal_max:
         yoe_score = 50
     elif yoe >= abs_min and yoe < ideal_min:
         yoe_score = 25 + 25 * ((yoe - abs_min) / (ideal_min - abs_min) if ideal_min != abs_min else 1)
     elif yoe > ideal_max:
         decay = (yoe - ideal_max) * 2.5
-        yoe_score = max(20, 50 - decay) 
+        yoe_score = max(20, 50 - decay)
     else:
         yoe_score = 5
-        
+
     trajectory_score = 25
     career = candidate.get('career_history', [])
-    
+
     tiers = JD_RULES.get('company_tiers', {})
     tier_1 = [c.lower() for c in tiers.get('tier_1', [])]
     consulting = [c.lower() for c in tiers.get('consulting', [])]
-    
+
     has_tier_1 = False
     all_consulting = True if career else False
-    
+
     seniority_levels = {'junior': 1, 'associate': 1, 'mid': 2, 'senior': 3, 'lead': 4, 'principal': 5, 'staff': 5}
     highest_level = 0
-    
+
     levels = []
     durations = []
-    
+    has_large_company = False
+
     for job in career:
         company = job.get('company', '').lower()
         title = job.get('title', '').lower()
-        
+        company_size = job.get('company_size', '')
+
         if any(t1 in company for t1 in tier_1):
             has_tier_1 = True
             all_consulting = False
         elif not any(cons in company for cons in consulting):
             all_consulting = False
-            
-        lvl = 2 
+
+        # Company size signal: large company experience is a quality indicator
+        if company_size in ['5001-10000', '10001+']:
+            has_large_company = True
+
+        lvl = 2
         for kw, level in seniority_levels.items():
             if kw in title:
                 lvl = level
                 if level > highest_level:
                     highest_level = level
                 break
-        
+
         levels.append(lvl)
         durations.append(job.get('duration_months', 0))
-        
+
     if has_tier_1:
         trajectory_score += 15
     if all_consulting:
-        trajectory_score -= 15 
-        
+        trajectory_score -= 15
+    if has_large_company and not has_tier_1:
+        trajectory_score += 5  # Moderate boost for large-company experience
+
     # Company PageRank Pedigree Boost
     pagerank_map = global_stats.get('company_pageranks', {}) if global_stats else {}
     highest_pr = 0.0
@@ -241,70 +298,141 @@ def score_career_trajectory(candidate, custom_weights=None, global_stats=None):
         pr = pagerank_map.get(company, 0.0)
         if pr > highest_pr:
             highest_pr = pr
-            
+
     if highest_pr >= 0.5:
         trajectory_score += int(highest_pr * 10)
-        
+
     if highest_level >= 3 and yoe <= 5 and yoe > 0:
         trajectory_score += 10
-        
-    # Career Sequence Alignment (Dynamic Time Warping / Sequence Alignment)
+
+    # Career Sequence Alignment (Dynamic Programming / Needleman-Wunsch)
     align_score = 0.0
     if levels:
         ideal_path = [1, 2, 3, 4, 5] if ideal_max > 5 else [1, 2, 3, 4]
         chrono_levels = levels[::-1]
         align_score = needleman_wunsch_alignment(chrono_levels, ideal_path)
         trajectory_score += int(align_score * 10)
-        
+
     if len(levels) >= 2:
         lvl_start = levels[-1]
         lvl_end = levels[0]
         total_months = sum(durations)
         total_years = total_months / 12.0
-        
+
         if total_years > 0:
             velocity_gradient = (lvl_end - lvl_start) / total_years
         else:
             velocity_gradient = 0.0
-            
+
         if velocity_gradient >= 0.4 and lvl_end > lvl_start:
             trajectory_score += 10
-            
+
+    # Education Tier Scoring (previously completely ignored)
+    education_bonus = 0
+    for edu in candidate.get('education', []):
+        edu_tier = edu.get('tier', 'unknown')
+        field = edu.get('field_of_study', '').lower()
+        degree = edu.get('degree', '').lower()
+        is_relevant = any(kw in field for kw in ['computer', 'ai', 'machine', 'data', 'engineering', 'mathematics', 'statistics'])
+        is_postgrad = any(kw in degree for kw in ['m.tech', 'm.e.', 'mtech', 'msc', 'm.sc', 'phd', 'ms', 'm.s.'])
+
+        tier_score = {'tier_1': 12, 'tier_2': 6, 'tier_3': 2, 'tier_4': 0, 'unknown': 1}.get(edu_tier, 0)
+        if is_relevant:
+            tier_score = int(tier_score * 1.3)
+        if is_postgrad:
+            tier_score += 3
+        education_bonus = max(education_bonus, tier_score)  # Take the best education entry
+
+    trajectory_score += min(10, education_bonus)  # Cap education contribution at 10 pts
     trajectory_score = max(0, min(50, trajectory_score))
     raw_score = yoe_score + trajectory_score
-    
+
     velocity_metrics = {
         'highest_level': highest_level,
         'has_tier_1': has_tier_1,
         'all_consulting': all_consulting,
-        'alignment_score': align_score
+        'alignment_score': align_score,
+        'education_bonus': education_bonus,
+        'has_large_company': has_large_company
     }
-            
+
     return (raw_score / 100.0) * weights['experience'], velocity_metrics
 
 def score_behavioral_intent(candidate, custom_weights=None, global_stats=None):
+    """
+    Scores behavioral engagement. Now includes: notice period, interview completion rate,
+    offer acceptance rate, saved_by_recruiters signal, and avg response time.
+    """
     weights = custom_weights if custom_weights else WEIGHTS
     signals = candidate.get('redrob_signals', {})
     if not signals:
         return 0, "No data"
-        
+
     raw_score = 50
+
+    # Recruiter response rate (core signal)
     rr = signals.get('recruiter_response_rate', 0.5)
-    raw_score += (rr - 0.5) * 40 
-    
+    raw_score += (rr - 0.5) * 40
+
     if signals.get('open_to_work_flag'):
         raw_score += 15
-        
+
     comp = signals.get('profile_completeness_score', 50)
     raw_score += (comp - 50) * 0.2
-    
+
     gh = signals.get('github_activity_score', -1)
     if gh > 50:
         raw_score += 10
-        
+    elif gh > 0:
+        raw_score += 4  # Partial credit for moderate GitHub activity
+
+    # Notice period: shorter is better for urgent hiring
+    notice = signals.get('notice_period_days', 90)
+    if notice <= 15:
+        raw_score += 10
+    elif notice <= 30:
+        raw_score += 6
+    elif notice <= 60:
+        raw_score += 2
+    elif notice > 90:
+        raw_score -= 5  # Penalize very long notice periods
+
+    # Interview completion rate: penalize candidates who ghost interviews
+    icr = signals.get('interview_completion_rate', 0.8)
+    if icr < 0.5:
+        raw_score -= 12
+    elif icr < 0.75:
+        raw_score -= 5
+    elif icr >= 0.95:
+        raw_score += 5
+
+    # Offer acceptance rate: low rate means they are unlikely to actually join
+    oar = signals.get('offer_acceptance_rate', -1)
+    if oar != -1:  # -1 means no history
+        if oar < 0.3:
+            raw_score -= 8
+        elif oar >= 0.7:
+            raw_score += 5
+
+    # Saved by recruiters in last 30 days: strong external validation signal
+    saved = signals.get('saved_by_recruiters_30d', 0)
+    if saved >= 5:
+        raw_score += 8
+    elif saved >= 2:
+        raw_score += 4
+
+    # Average response time: faster responders are more engaged
+    avg_rt = signals.get('avg_response_time_hours', 48)
+    if avg_rt <= 4:
+        raw_score += 6
+    elif avg_rt <= 12:
+        raw_score += 3
+    elif avg_rt > 72:
+        raw_score -= 4
+
     last_active = signals.get('last_active_date')
     status = "Active"
-    
+
     def parse_date(date_str):
         if not date_str:
             return None
@@ -330,11 +458,11 @@ def score_behavioral_intent(candidate, custom_weights=None, global_stats=None):
         else:
             if '2023' in last_active or '2022' in last_active:
                 decay_mult = 0.25
-                
+
         penalty = 30.0 * (1.0 - decay_mult)
         raw_score -= penalty
         status = "Active" if decay_mult > 0.8 else ("Moderate" if decay_mult > 0.5 else "Stale")
-            
+
     raw_score = max(0, min(100, raw_score))
     return (raw_score / 100.0) * weights['behavioral'], status
 
@@ -342,27 +470,27 @@ def score_location(candidate, custom_weights=None, global_stats=None):
     weights = custom_weights if custom_weights else WEIGHTS
     profile = candidate.get('profile', {})
     loc = profile.get('location', '').lower()
-    
+
     raw_score = 0
-    
+
     for pref in JD_RULES['locations']['preferred']:
         if pref.lower() in loc:
             raw_score = 100
             break
-            
+
     if raw_score == 0:
         for acc in JD_RULES['locations']['acceptable']:
             if acc.lower() in loc:
                 raw_score = 70
                 break
-                
+
     if raw_score == 0:
         signals = candidate.get('redrob_signals', {})
         if signals.get('willing_to_relocate'):
             raw_score = 60
         else:
             raw_score = 20
-            
+
     return (raw_score / 100.0) * weights['location']
 
 def score_candidate(candidate, custom_weights=None, global_stats=None):
@@ -370,24 +498,24 @@ def score_candidate(candidate, custom_weights=None, global_stats=None):
     Returns (total_score, sub_scores, is_honeypot_flag)
     """
     weights = custom_weights if custom_weights else WEIGHTS
-    
+
     if is_honeypot(candidate, global_stats=global_stats):
         return 0, {}, True
-        
+
     s_skills, matched_clusters = score_skills_semantic(candidate, custom_weights=custom_weights, global_stats=global_stats)
     s_exp, velocity = score_career_trajectory(candidate, custom_weights=custom_weights, global_stats=global_stats)
     s_beh, beh_status = score_behavioral_intent(candidate, custom_weights=custom_weights, global_stats=global_stats)
     s_loc = score_location(candidate, custom_weights=custom_weights, global_stats=global_stats)
-    
+
     total = s_skills + s_exp + s_beh + s_loc
     total_normalized = total / 100.0
-    
+
     # Calculate raw scores out of 100 for client sliders
     raw_skills = (s_skills / weights['skills'] * 100.0) if weights['skills'] > 0 else 0.0
     raw_experience = (s_exp / weights['experience'] * 100.0) if weights['experience'] > 0 else 0.0
     raw_behavioral = (s_beh / weights['behavioral'] * 100.0) if weights['behavioral'] > 0 else 0.0
     raw_location = (s_loc / weights['location'] * 100.0) if weights['location'] > 0 else 0.0
-    
+
     sub_scores = {
         'skills': s_skills,
         'experience': s_exp,
@@ -401,5 +529,5 @@ def score_candidate(candidate, custom_weights=None, global_stats=None):
         'velocity': velocity,
         'beh_status': beh_status
     }
-    
+
     return total_normalized, sub_scores, False

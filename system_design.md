@@ -4,7 +4,7 @@ This document details the production-grade, highly scalable system design of the
 
 ---
 
-## 🏗️ High-Level System Architecture
+## High-Level System Architecture
 
 The system is split into two primary layers:
 1. **Parallelized Python Engine (Offline CLI)**: Handles data ingestion, global feature extraction (PageRank, Shannon Entropy limits, TF-IDF weights), and multi-core candidate ranking.
@@ -56,7 +56,7 @@ graph TD
 
 ---
 
-## 🧬 Algorithmic Highlights
+## Algorithmic Highlights
 
 ### 1. Dynamic Programming Career Sequence Alignment
 To prevent candidate keyword inflation or career chronology deception, the system aligns the candidate's actual sequence of job titles chronologically against a standard progression:
@@ -87,7 +87,7 @@ $$W_{new} = \text{clip}\Big(W_{current} + \text{sign} \cdot \alpha \cdot (S_{can
 
 ---
 
-## 📈 Scalability Highlights
+## Scalability Highlights
 
 * **O(N) Streaming Scanner**: Streams profiles sequentially during pre-scanning to restrict memory footprint under 200MB even for millions of records.
 * **Process Pool Parallelization**: Splits candidate batches across all CPU cores, processing **100,000+ candidates in under 8 seconds** (up to $6\times$ faster).

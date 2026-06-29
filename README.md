@@ -1,30 +1,26 @@
-# 🟥 Redrob AI Ranker
+# Redrob AI Ranker
 
 > **India Runs — Data & AI Challenge** | Intelligent Candidate Discovery & Ranking
 
-[![Python](https://img.shields.io/badge/Python-3.8+-blue?logo=python&logoColor=white)](https://python.org)
-[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
-[![Hackathon](https://img.shields.io/badge/Redrob-Data%20%26%20AI%20Challenge-red)](https://redrob.in)
-[![Status](https://img.shields.io/badge/Status-Submission%20Ready-brightgreen)]()
 
 A **production-grade, fully offline AI candidate ranking engine** built for the Redrob Data & AI Hackathon. It processes **100,000+ candidate profiles in under 35 seconds** — with zero API calls, zero internet dependency, and a transparent scoring system that works like an expert recruiter, not a keyword matcher.
 
 ---
 
 
-## 🎯 The Problem We're Solving
+## The Problem We're Solving
 
-Traditional HR tools rank candidates by **keyword frequency**. If a job description says "Python", the tool finds everyone who wrote "Python" anywhere on their resume. That's it.
+Traditional HR tools rank candidates by **keyword frequency**. If a job description says "Python", the tool finds everyone who wrote "Python" anywhere on their resume. This limits the scope of evaluation.
 
-This is broken. A junior developer who pastes keywords scores higher than a senior engineer who describes their actual work. The result? Recruiters waste hours manually sifting through mismatched profiles.
+This approach is often inadequate. A junior developer who pastes keywords scores higher than a senior engineer who describes their actual work. The result? Recruiters waste hours manually sifting through mismatched profiles.
 
 **Our system thinks differently.** Instead of counting keywords, it understands *meaning*, *trajectory*, and *intent* — the way a great human recruiter would.
 
 ---
 
-## ✨ Key Features
+## Key Features
 
-### 🧠 Semantic Skill Matching (not keyword matching)
+### Semantic Skill Matching (not keyword matching)
 Skills are grouped into **5 semantic clusters** (defined in `data/jd_rules.json`):
 
 | Cluster | Covers |
@@ -37,37 +33,37 @@ Skills are grouped into **5 semantic clusters** (defined in `data/jd_rules.json`
 
 A candidate doesn't need to match the *exact* keyword. They get credit for the *entire semantic cluster* they demonstrate competency in.
 
-### 📈 Career Trajectory Analysis
+### Career Trajectory Analysis
 The engine doesn't just count years — it analyses the *shape* of a career:
 - **Promotion Velocity**: Were they promoted quickly? Multiple senior titles = high signal
 - **Company Tiering**: Tier-1 companies (Google, Microsoft, OpenAI, Anthropic, etc.) get a score boost
 - **Consulting Penalty**: Pure consulting profiles (TCS, Infosys, Wipro, etc.) are down-weighted when the role requires product-building instincts
 - **Experience Band Fit**: Ideal 5–9 years gets full marks; under/over gets a graded penalty
 
-### 🎭 Behavioral Intent Scoring
+### Behavioral Intent Scoring
 The system reads engagement signals that indicate whether a candidate is *actually* looking:
 - **Recruiter Response Rate**: Candidates who historically respond quickly rank higher
 - **Open-to-Work Status**: Active job seekers get a meaningful boost
 - **Platform Activity**: Recently active candidates signal genuine interest
 - **Notice Period**: Shorter notice periods preferred; very long ones penalised
 
-### 📍 Location Intelligence
+### Location Intelligence
 - **Preferred cities** (Pune, Noida, Delhi NCR): Full score
 - **Acceptable cities** (Bangalore, Hyderabad, Mumbai, Chennai): Moderate score
 - **Remote / other**: Neutral score
 
-### 🛡️ Honeypot Detection (Anti-Gaming)
+### Honeypot Detection (Anti-Gaming)
 The system automatically identifies and filters out fake or inflated profiles using:
 1. **Impossible Skill Claims**: Expert proficiency + 0 months used = instant disqualification
 2. **Experience Inconsistency**: Stated 10 years experience but career history shows <1 year
 3. **Shannon Entropy Anomaly Detection**: Profiles whose text entropy deviates by more than 2 standard deviations from the population mean are flagged as statistically anomalous
 
-### 💬 Explainable AI (XAI) Reasoning
+### Explainable AI (XAI) Reasoning
 Every shortlisted candidate comes with a **deterministic, data-driven rationale** — not a generic template. The reasoning engine generates context-aware justifications based on the candidate's actual scores, cluster matches, and behavioral signals.
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 ```
 redrob-ai-ranker/
@@ -92,7 +88,7 @@ redrob-ai-ranker/
 
 ---
 
-## ⚙️ How the Scoring Works
+## How the Scoring Works
 
 Each candidate receives a **final composite score between 0.0 and 1.0**, calculated as a weighted sum of 4 axes:
 
@@ -138,29 +134,29 @@ When two candidates share the same score (to 4 decimal places), they are sorted 
 
 ---
 
-## 🔒 Why This Is Reliable
+## Why This Is Reliable
 
-### ✅ Fully Offline — No API Calls
+### Fully Offline — No API Calls
 The entire pipeline runs on your local machine with Python's standard library. There are **zero calls to OpenAI, Claude, Gemini, or any external service**. This means:
 - Works in the hackathon sandbox environment (no internet access)
 - Finishes within the 5-minute CPU time limit
 - No rate limits, no latency, no cost
 
-### ✅ Deterministic & Reproducible
+### Deterministic & Reproducible
 Run it 100 times on the same input — you get the exact same output. There are no random seeds, no model stochasticity, no probabilistic decisions. The same candidate always gets the same score.
 
-### ✅ Transparent & Explainable
+### Transparent & Explainable
 Every score is broken down into sub-components. You can look at any candidate and understand precisely why they ranked where they did. There is no black-box inference happening.
 
-### ✅ Anti-Gaming
+### Anti-Gaming
 The Shannon entropy check + experience inconsistency check ensures that candidates who try to pad their profiles with keywords are either penalised or filtered. Real experience scores higher than copied buzzwords.
 
-### ✅ Configurable for Any Role
+### Configurable for Any Role
 The entire job description is defined in one human-readable JSON file. No code changes required to hire for a completely different role — just update `data/jd_rules.json`.
 
 ---
 
-## 🖥️ Interactive Dashboard UI
+## Interactive Dashboard UI
 
 The project includes a premium interactive web dashboard at `frontend/index.html`. It is a **pure HTML + JavaScript single file** — no build step, no npm, no framework required. Just open it in any browser.
 
@@ -186,7 +182,7 @@ Step 1: Define Role → Step 2: Upload CSV → Step 3: Processing → Step 4: Re
 
 ---
 
-## 🚀 How to Run
+## How to Run
 
 ### Prerequisites
 - Python 3.8 or higher
@@ -222,7 +218,7 @@ Or simply double-click `frontend/index.html` to open it directly in your browser
 
 ---
 
-## 🔧 Customising for a Different Role
+## Customising for a Different Role
 
 All role configuration lives in one file: [`data/jd_rules.json`](data/jd_rules.json)
 
@@ -254,7 +250,7 @@ Edit this file, save it, and re-run `python run.py`. That's it — no code chang
 
 ---
 
-## 📊 Performance
+## Performance
 
 | Metric | Value |
 |---|---|
@@ -263,11 +259,11 @@ Edit this file, save it, and re-run `python run.py`. That's it — no code chang
 | Memory usage | < 500 MB RAM |
 | API calls | **Zero** |
 | External dependencies | **Zero** (pure Python stdlib for core engine) |
-| Hackathon time limit | 5 minutes ✅ (we're 8× faster) |
+| Hackathon time limit | 5 minutes (we're 8× faster) |
 
 ---
 
-## 📁 Output Format
+## Output Format
 
 The `team_submission.csv` output strictly follows the hackathon submission schema:
 
@@ -287,12 +283,9 @@ rank,candidate_id,score,reasoning
 
 ---
 
-## 👥 Team
+## Team TOPGUN
 
-Built for the **India Runs — Data & AI Challenge** hosted by [Redrob](https://redrob.in).
-
----
-
-## 📄 License
-
-MIT License — feel free to learn from and build on this work.
+- **Nethavath Praveen** (Team Lead) - praveeeening@gmail.com
+- **Abhinaya Nunna** - abhinayaseven@gmail.com
+- **Botsa Radesh** - radeshbotsa@gmail.com
+- **Sai Sameer Killamsetti** - saisameerkillamsetty8@gmail.com

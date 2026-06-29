@@ -215,9 +215,10 @@ def process_candidates(candidates_path, limit=100, custom_weights=None):
 
 def write_submission(results, out_path):
     print(f"Writing output to {out_path}...")
+    # Official submission format: exactly 4 columns only
+    submission_fieldnames = ['candidate_id', 'rank', 'score', 'reasoning']
     with open(out_path, 'w', newline='', encoding='utf-8') as f:
-        fieldnames = ['candidate_id', 'rank', 'score', 'reasoning', 'raw_skills', 'raw_experience', 'raw_behavioral', 'raw_location']
-        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer = csv.DictWriter(f, fieldnames=submission_fieldnames, extrasaction='ignore')
         writer.writeheader()
         writer.writerows(results)
     print("Done!")
